@@ -2,4 +2,22 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- AirSense Brand Colors based on Logo -->
+    <color name="airsense_primary">#0C4B59</color>
+    <color name="airsense_primary_dark">#072F38</color>
+    <color name="airsense_secondary">#149B93</color>
+    <color name="airsense_secondary_light">#E0F2F1</color>
+    <color name="airsense_accent">#F2A027</color>
+    <color name="airsense_accent_light">#FEF5E7</color>
+
+    <color name="airsense_bg_light">#F4F7F6</color>
+    <color name="airsense_card_bg">#FFFFFF</color>
+    <color name="airsense_text_dark">#0F242A</color>
+    <color name="airsense_text_muted">#577077</color>
+
+    <!-- Indicator Colors -->
+    <color name="status_good">#149B93</color>
+    <color name="status_warning">#F2A027</color>
+    <color name="status_danger">#E53935</color>
 </resources>
