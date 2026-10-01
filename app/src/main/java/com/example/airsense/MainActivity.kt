@@ -19,6 +19,7 @@ import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,25 +36,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        userPrefs = UserPreferencesManager(this)
+
+        // Apply saved Dark Mode preference BEFORE super.onCreate to prevent activity recreate flicker
+        runBlocking {
+            val isDark = userPrefs.isDarkModeFlow.first()
+            val targetMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+                AppCompatDelegate.setDefaultNightMode(targetMode)
+            }
+        }
+
+        installSplashScreen()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-
-        userPrefs = UserPreferencesManager(this)
-
-        // Apply saved Dark Mode preference
-        lifecycleScope.launch {
-            val isDark = userPrefs.isDarkModeFlow.first()
-            val currentMode = AppCompatDelegate.getDefaultNightMode()
-            val targetMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-            if (currentMode != targetMode) {
-                AppCompatDelegate.setDefaultNightMode(targetMode)
-            }
-        }
 
         // Request notification permission for Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.databinding.FragmentSettingsBinding
+import com.example.airsense.notifications.NotificationHelper
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -54,8 +55,22 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupNotificationSwitch()
+        setupTestNotificationButton()
         setupDarkModeSwitch()
         setupUnitToggle()
+    }
+
+    private fun setupTestNotificationButton() {
+        binding.btnTestNotification.setOnClickListener {
+            val notificationHelper = NotificationHelper(requireContext())
+            val sent = notificationHelper.sendTestNotification()
+            val message = if (sent) {
+                "Notificación de prueba enviada exitosamente"
+            } else {
+                "No se pudo enviar la notificación. Verifica que los permisos y notificaciones estén activos."
+            }
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupNotificationSwitch() {
@@ -70,40 +85,62 @@ class SettingsFragment : Fragment() {
                 true
             }
 
-            _binding?.switchNotifications?.isChecked = isPrefEnabled && isPermissionGranted
-        }
-
-        binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val hasPermission = ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-
-                if (!hasPermission) {
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    return@setOnCheckedChangeListener
+            _binding?.switchNotifications?.let { switch ->
+                switch.setOnCheckedChangeListener(null)
+                val targetChecked = isPrefEnabled && isPermissionGranted
+                if (switch.isChecked != targetChecked) {
+                    switch.isChecked = targetChecked
+                    switch.jumpDrawablesToCurrentState()
                 }
-            }
 
-            lifecycleScope.launch {
-                userPrefs.setNotificationsEnabled(isChecked)
+                switch.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val hasPermission = ContextCompat.checkSelfPermission(
+                            requireContext(),
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if (!hasPermission) {
+                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            return@setOnCheckedChangeListener
+                        }
+                    }
+
+                    lifecycleScope.launch {
+                        userPrefs.setNotificationsEnabled(isChecked)
+                    }
+                }
             }
         }
     }
 
     private fun setupDarkModeSwitch() {
-        lifecycleScope.launch {
-            val isDarkPref = userPrefs.isDarkModeFlow.first()
-            _binding?.switchDarkMode?.isChecked = isDarkPref
+        val currentNightMode = AppCompatDelegate.getDefaultNightMode()
+        val isCurrentDark = currentNightMode == AppCompatDelegate.MODE_NIGHT_YES
+
+        _binding?.switchDarkMode?.let { switch ->
+            switch.setOnCheckedChangeListener(null)
+            switch.isChecked = isCurrentDark
+            switch.jumpDrawablesToCurrentState()
         }
 
-        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            lifecycleScope.launch {
-                userPrefs.setDarkMode(isChecked)
-                val newMode = if (isChecked) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-                if (AppCompatDelegate.getDefaultNightMode() != newMode) {
-                    AppCompatDelegate.setDefaultNightMode(newMode)
+        lifecycleScope.launch {
+            val isDarkPref = userPrefs.isDarkModeFlow.first()
+            _binding?.switchDarkMode?.let { switch ->
+                switch.setOnCheckedChangeListener(null)
+                if (switch.isChecked != isDarkPref) {
+                    switch.isChecked = isDarkPref
+                    switch.jumpDrawablesToCurrentState()
+                }
+
+                switch.setOnCheckedChangeListener { _, isChecked ->
+                    lifecycleScope.launch {
+                        userPrefs.setDarkMode(isChecked)
+                        val newMode = if (isChecked) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+                        if (AppCompatDelegate.getDefaultNightMode() != newMode) {
+                            AppCompatDelegate.setDefaultNightMode(newMode)
+                        }
+                    }
                 }
             }
         }

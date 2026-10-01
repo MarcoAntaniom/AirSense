@@ -45,10 +45,11 @@
 
     <!-- Settings Screen -->
     <string name="settings_notifications">Notificaciones de Alerta</string>
+    <string name="btn_test_notification">Probar Módulo de Notificaciones</string>
     <string name="settings_dark_mode">Modo Oscuro</string>
     <string name="notification_permission_granted">Permisos de notificaciones concedidos</string>
     <string name="notification_permission_denied">Permiso de notificaciones denegado en el sistema</string>
     <string name="settings_units">Unidad de Temperatura (°C / °F)</string>
     <string name="settings_about">Acerca de AirSense</string>
-    <string name="settings_version">Versión 1.0.0</string>
+    <string name="settings_version">Versión 1.2.0</string>
 </resources>
