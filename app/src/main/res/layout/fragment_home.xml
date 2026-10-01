@@ -129,6 +129,7 @@
                         app:tint="@color/airsense_accent" />
 
                     <TextView
+                        android:id="@+id/tv_home_temp_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark theme surfaces with strong contrast -->
+    <color name="airsense_bg_light">#101518</color>
+    <color name="airsense_card_bg">#1A2328</color>
+
+    <!-- High contrast text and icon colors for dark backgrounds -->
+    <color name="airsense_primary">#4DD0E1</color>
+    <color name="airsense_primary_dark">#26C6DA</color>
+    <color name="airsense_secondary">#26A69A</color>
+    <color name="airsense_secondary_light">#1C3B38</color>
+    <color name="airsense_accent">#FFB74D</color>
+    <color name="airsense_accent_light">#3E2D18</color>
+
+    <color name="airsense_text_dark">#FFFFFF</color>
+    <color name="airsense_text_muted">#CFD8DC</color>
+    <color name="airsense_divider">#33FFFFFF</color>
+
+    <!-- Indicator status colors for dark mode -->
+    <color name="status_good">#26A69A</color>
+    <color name="status_warning">#FFA726</color>
+    <color name="status_danger">#EF5350</color>
+</resources>

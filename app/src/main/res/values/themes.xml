@@ -10,4 +10,11 @@
     </style>
 
     <style name="Theme.AirSense" parent="Base.Theme.AirSense" />
+
+    <!-- SplashScreen API Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/airsense_primary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.AirSense</item>
+    </style>
 </resources>

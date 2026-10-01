@@ -15,6 +15,7 @@
     <color name="airsense_card_bg">#FFFFFF</color>
     <color name="airsense_text_dark">#0F242A</color>
     <color name="airsense_text_muted">#577077</color>
+    <color name="airsense_divider">#1F000000</color>
 
     <!-- Indicator Colors -->
     <color name="status_good">#149B93</color>

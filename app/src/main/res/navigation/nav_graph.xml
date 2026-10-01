@@ -6,20 +6,59 @@
     app:startDestination="@id/navigation_home">
 
     <fragment
+        android:id="@+id/onboardingFragment"
+        android:name="com.example.airsense.ui.onboarding.OnboardingFragment"
+        android:label="Bienvenido"
+        tools:layout="@layout/fragment_onboarding">
+        <action
+            android:id="@+id/action_onboardingFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/onboardingFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.airsense.HomeFragment"
+        android:name="com.example.airsense.ui.home.HomeFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_sensors"
-        android:name="com.example.airsense.SensorsFragment"
+        android:name="com.example.airsense.ui.sensors.SensorsFragment"
         android:label="@string/title_sensors"
-        tools:layout="@layout/fragment_sensors" />
+        tools:layout="@layout/fragment_sensors">
+        <action
+            android:id="@+id/action_navigation_sensors_to_sensorDetailFragment"
+            app:destination="@id/sensorDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/sensorDetailFragment"
+        android:name="com.example.airsense.ui.sensors.SensorDetailFragment"
+        android:label="Detalle del Sensor"
+        tools:layout="@layout/fragment_sensor_detail">
+        <argument
+            android:name="sensorId"
+            android:defaultValue="sns_01"
+            app:argType="string" />
+        <argument
+            android:name="sensorName"
+            android:defaultValue="Sensor IoT"
+            app:argType="string" />
+        <argument
+            android:name="sensorType"
+            android:defaultValue="AQI + Temp"
+            app:argType="string" />
+        <argument
+            android:name="batteryLevel"
+            android:defaultValue="100"
+            app:argType="integer" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_settings"
-        android:name="com.example.airsense.SettingsFragment"
+        android:name="com.example.airsense.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" />
 </navigation>
