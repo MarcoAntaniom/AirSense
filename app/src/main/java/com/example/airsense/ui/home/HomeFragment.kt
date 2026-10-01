@@ -11,6 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.databinding.FragmentHomeBinding
+import com.example.airsense.notifications.NotificationHelper
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -19,6 +21,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: HomeViewModel by viewModels()
     private lateinit var userPrefs: UserPreferencesManager
+    private lateinit var notificationHelper: NotificationHelper
     private var currentTempCelsius: Double = 22.5
 
     override fun onCreateView(
@@ -28,6 +31,7 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         userPrefs = UserPreferencesManager(requireContext())
+        notificationHelper = NotificationHelper(requireContext())
         return binding.root
     }
 
@@ -58,6 +62,15 @@ class HomeFragment : Fragment() {
             is HomeUiState.Success -> {
                 currentTempCelsius = state.metrics.temperatureCelsius
                 updateTemperatureDisplay(false)
+
+                // Evaluar umbrales y disparar notificación amigable si corresponde
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val notificationsEnabled = userPrefs.isNotificationsEnabledFlow.first()
+                    notificationHelper.sendFriendlyThresholdAlertIfNeeded(
+                        metrics = state.metrics,
+                        userNotificationsEnabled = notificationsEnabled
+                    )
+                }
             }
             is HomeUiState.Empty -> {
                 // Render Empty State

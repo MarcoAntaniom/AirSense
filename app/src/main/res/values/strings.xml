@@ -6,6 +6,7 @@
     <!-- Navigation Labels -->
     <string name="title_home">Inicio</string>
     <string name="title_sensors">Sensores</string>
+    <string name="title_recommendations">Recomendaciones</string>
     <string name="title_settings">Ajustes</string>
 
     <!-- Home Screen Strings -->
@@ -51,5 +52,32 @@
     <string name="notification_permission_denied">Permiso de notificaciones denegado en el sistema</string>
     <string name="settings_units">Unidad de Temperatura (°C / °F)</string>
     <string name="settings_about">Acerca de AirSense</string>
-    <string name="settings_version">Versión 1.2.0</string>
+    <string name="settings_version">Versión 1.3.1 (Beta)</string>
+
+    <!-- Recommendations Screen -->
+    <string name="recommendations_header_title">Recomendaciones de Salud</string>
+    <string name="recommendations_header_subtitle">Consejos prácticos para mejorar la calidad del aire y mantener un ambiente óptimo en tu hogar.</string>
+
+    <string name="rec_ventilation_title">Ventilación Diaria Recomendada</string>
+    <string name="rec_ventilation_desc">Ventila tus espacios cerrados de 10 a 15 minutos por la mañana. Esto ayuda a renovar el oxígeno y reducir concentraciones de CO2.</string>
+
+    <string name="rec_humidity_title">Control Inteligente de Humedad</string>
+    <string name="rec_humidity_desc">Mantén la humedad entre el 30% y el 60%. Si está baja, usa un humidificador o agua hirviendo; si está alta, usa deshumidificadores para prevenir ácaros y moho.</string>
+
+    <string name="rec_temperature_title">Confort Térmico Saludable</string>
+    <string name="rec_temperature_desc">Una temperatura de 18°C a 26°C favorece el descanso óptimo y previene alergias respiratorias. Evita cambios drásticos de temperatura.</string>
+
+    <string name="rec_plants_title">Plantas Purificadoras de Aire</string>
+    <string name="rec_plants_desc">Incorpora plantas como la Sansevieria (Lengua de suegra) o el Potos. Ayudan a filtrar toxinas volátiles e incrementan el oxígeno ambiental.</string>
+
+    <string name="rec_filters_title">Mantenimiento de Sensores</string>
+    <string name="rec_filters_desc">Limpia con regularidad los conductos de entrada de tus sensores AirSense para asegurar lecturas de precisión continua.</string>
+
+    <!-- Friendly Threshold Notifications -->
+    <string name="alert_friendly_title">Consejo de Confort AirSense</string>
+    <string name="alert_temp_low">Parece que la temperatura está algo baja (%s). Abrígate bien o ajusta la calefacción.</string>
+    <string name="alert_temp_high">La temperatura ambiente es elevada (%s). Mantén la zona ventilada y bebe agua fresca.</string>
+    <string name="alert_humidity_low">Parece que el ambiente está un poco seco (%d%%). Considera ventilar la habitación o beber agua.</string>
+    <string name="alert_humidity_high">La humedad ambiental está elevada (%d%%). Te sugerimos ventilar el ambiente para evitar exceso de humedad.</string>
+    <string name="alert_air_quality_poor">La calidad del aire no es la ideal (AQI: %d). Procura abrir ventanas para renovar el flujo de aire.</string>
 </resources>

@@ -57,6 +57,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/navigation_recommendations"
+        android:name="com.example.airsense.ui.recommendations.RecommendationsFragment"
+        android:label="@string/title_recommendations"
+        tools:layout="@layout/fragment_recommendations" />
+
+    <fragment
         android:id="@+id/navigation_settings"
         android:name="com.example.airsense.ui.settings.SettingsFragment"
         android:label="@string/title_settings"

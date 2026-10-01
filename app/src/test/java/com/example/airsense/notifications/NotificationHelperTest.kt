@@ -36,7 +36,9 @@ class NotificationHelperTest {
             aqi = 75,
             aqiStatus = "Moderada",
             co2Ppm = 400,
-            pm25Ug = 10
+            pm25Ug = 10,
+            temperatureCelsius = 22.0,
+            humidityPercentage = 50
         )
         val shouldSend = NotificationHelper.shouldSendAlert(elevatedAqiMetrics, userNotificationsEnabled = true)
         assertTrue(shouldSend)
@@ -48,10 +50,54 @@ class NotificationHelperTest {
             aqi = 30,
             aqiStatus = "Excelente",
             co2Ppm = 1200,
-            pm25Ug = 10
+            pm25Ug = 10,
+            temperatureCelsius = 22.0,
+            humidityPercentage = 50
         )
         val shouldSend = NotificationHelper.shouldSendAlert(highCo2Metrics, userNotificationsEnabled = true)
         assertTrue(shouldSend)
+    }
+
+    @Test
+    fun shouldSendAlert_returnsTrueWhenTemperatureOutOfBounds() {
+        val lowTempMetrics = AirQualityMetrics(
+            aqi = 25,
+            co2Ppm = 400,
+            pm25Ug = 10,
+            temperatureCelsius = 15.0, // Bajo 18.0 °C
+            humidityPercentage = 50
+        )
+        assertTrue(NotificationHelper.shouldSendAlert(lowTempMetrics, userNotificationsEnabled = true))
+
+        val highTempMetrics = AirQualityMetrics(
+            aqi = 25,
+            co2Ppm = 400,
+            pm25Ug = 10,
+            temperatureCelsius = 29.0, // Sobre 26.0 °C
+            humidityPercentage = 50
+        )
+        assertTrue(NotificationHelper.shouldSendAlert(highTempMetrics, userNotificationsEnabled = true))
+    }
+
+    @Test
+    fun shouldSendAlert_returnsTrueWhenHumidityOutOfBounds() {
+        val dryMetrics = AirQualityMetrics(
+            aqi = 25,
+            co2Ppm = 400,
+            pm25Ug = 10,
+            temperatureCelsius = 22.0,
+            humidityPercentage = 20 // Bajo 30%
+        )
+        assertTrue(NotificationHelper.shouldSendAlert(dryMetrics, userNotificationsEnabled = true))
+
+        val humidMetrics = AirQualityMetrics(
+            aqi = 25,
+            co2Ppm = 400,
+            pm25Ug = 10,
+            temperatureCelsius = 22.0,
+            humidityPercentage = 70 // Sobre 60%
+        )
+        assertTrue(NotificationHelper.shouldSendAlert(humidMetrics, userNotificationsEnabled = true))
     }
 
     @Test
@@ -60,10 +106,26 @@ class NotificationHelperTest {
             aqi = 25,
             aqiStatus = "Excelente",
             co2Ppm = 420,
-            pm25Ug = 8
+            pm25Ug = 8,
+            temperatureCelsius = 22.5,
+            humidityPercentage = 54
         )
         val shouldSend = NotificationHelper.shouldSendAlert(optimalMetrics, userNotificationsEnabled = true)
         assertFalse(shouldSend)
+    }
+
+    @Test
+    fun createFriendlyNotificationBody_generatesEmpatheticMessageForDryAir() {
+        val dryMetrics = AirQualityMetrics(
+            aqi = 25,
+            co2Ppm = 400,
+            pm25Ug = 10,
+            temperatureCelsius = 22.0,
+            humidityPercentage = 22
+        )
+        val body = NotificationHelper.createFriendlyNotificationBody(dryMetrics)
+        assertTrue(body.contains("seco"))
+        assertTrue(body.contains("22%"))
     }
 
     @Test

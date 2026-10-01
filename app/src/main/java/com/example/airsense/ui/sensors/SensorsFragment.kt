@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
@@ -80,7 +81,12 @@ class SensorsFragment : Fragment() {
             "sensorType" to sensorType,
             "batteryLevel" to batteryLevel
         )
-        findNavController().navigate(R.id.action_navigation_sensors_to_sensorDetailFragment, args)
+        try {
+            findNavController().navigate(R.id.action_navigation_sensors_to_sensorDetailFragment, args)
+        } catch (_: Exception) {
+            val navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)
+            navController.navigate(R.id.action_navigation_sensors_to_sensorDetailFragment, args)
+        }
     }
 
     override fun onDestroyView() {
