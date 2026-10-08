@@ -18,7 +18,6 @@ import com.example.airsense.databinding.ActivityMainBinding
 import com.example.airsense.ui.main.MainPagerAdapter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,20 +36,21 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         userPrefs = UserPreferencesManager(this)
 
-        // Apply saved Dark Mode preference BEFORE super.onCreate to prevent activity recreate flicker
-        runBlocking {
-            val isDark = userPrefs.isDarkModeFlow.first()
-            val targetMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-            if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
-                AppCompatDelegate.setDefaultNightMode(targetMode)
-            }
-        }
-
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Observe Dark Mode asynchronously without blocking UI startup thread
+        lifecycleScope.launch {
+            userPrefs.isDarkModeFlow.collect { isDark ->
+                val targetMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+                if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+                    AppCompatDelegate.setDefaultNightMode(targetMode)
+                }
+            }
+        }
 
         setSupportActionBar(binding.toolbar)
 

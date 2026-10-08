@@ -5,6 +5,10 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/navigation_home">
 
+    <action
+        android:id="@+id/action_global_sensorDetailFragment"
+        app:destination="@id/sensorDetailFragment" />
+
     <fragment
         android:id="@+id/onboardingFragment"
         android:name="com.example.airsense.ui.onboarding.OnboardingFragment"

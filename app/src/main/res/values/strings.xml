@@ -35,6 +35,11 @@
     <string name="status_temp_val">22.5 °C</string>
     <string name="status_humidity_label">Humedad</string>
     <string name="status_humidity_val">54 %</string>
+    <string name="cd_refresh_weather">Actualizar datos del clima</string>
+    <string name="error_weather_connection">Error de conexión a la API de clima.</string>
+    <string name="btn_retry_text">Reintentar</string>
+    <string name="status_api_source">📡 Datos en vivo vía API Google Weather &amp; Air Quality</string>
+    <string name="btn_grant_location">Usar Ubicación Actual</string>
 
     <!-- Sensors Screen -->
     <string name="sensors_header_title">Lecturas de Sensores</string>
@@ -52,7 +57,7 @@
     <string name="notification_permission_denied">Permiso de notificaciones denegado en el sistema</string>
     <string name="settings_units">Unidad de Temperatura (°C / °F)</string>
     <string name="settings_about">Acerca de AirSense</string>
-    <string name="settings_version">Versión 1.3.1 (Beta)</string>
+    <string name="settings_version">Versión 1.3.5 (Beta)</string>
 
     <!-- Recommendations Screen -->
     <string name="recommendations_header_title">Recomendaciones de Salud</string>
