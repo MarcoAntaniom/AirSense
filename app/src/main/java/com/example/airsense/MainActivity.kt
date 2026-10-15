@@ -1,21 +1,20 @@
 package com.example.airsense
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
-import androidx.viewpager2.widget.ViewPager2
+import androidx.navigation.ui.setupWithNavController
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.databinding.ActivityMainBinding
-import com.example.airsense.ui.main.MainPagerAdapter
+import com.example.airsense.notifications.SensorMonitoringService
+import com.example.airsense.ui.SharedAirSenseViewModel
+import com.example.airsense.utils.PermissionHelper
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -23,13 +22,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var userPrefs: UserPreferencesManager
-    private lateinit var pagerAdapter: MainPagerAdapter
+    private val sharedViewModel: SharedAirSenseViewModel by viewModels()
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
+    private val requestAppPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ ->
         lifecycleScope.launch {
-            userPrefs.setNotificationsEnabled(isGranted)
+            val isNotificationGranted = PermissionHelper.hasNotificationPermission(this@MainActivity)
+            userPrefs.setNotificationsEnabled(isNotificationGranted)
+            if (isNotificationGranted) {
+                SensorMonitoringService.startService(this@MainActivity)
+            }
         }
     }
 
@@ -42,10 +45,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Observe Dark Mode asynchronously without blocking UI startup thread
+        // Escuchar el Modo de Tema (Sistema, Claro, Oscuro) de forma asíncrona
         lifecycleScope.launch {
-            userPrefs.isDarkModeFlow.collect { isDark ->
-                val targetMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            userPrefs.themeModeFlow.collect { themeMode ->
+                val targetMode = when (themeMode) {
+                    UserPreferencesManager.THEME_LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+                    UserPreferencesManager.THEME_DARK -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
                 if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
                     AppCompatDelegate.setDefaultNightMode(targetMode)
                 }
@@ -54,19 +61,11 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        // Request notification permission for Android 13+ (API 33+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
+        // Solicitar permisos del sistema
+        checkAndRequestPermissions()
 
-        setupViewPagerAndNavigation()
-        setupNavHostListener()
+        // Configurar navegación unificada con Jetpack Navigation
+        setupNavigation()
 
         // Router Evaluation: si es la primera ejecución, navegar a Onboarding
         lifecycleScope.launch {
@@ -74,91 +73,62 @@ class MainActivity : AppCompatActivity() {
             if (isFirstRun) {
                 val navHostFragment = supportFragmentManager
                     .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-                navHostFragment.navController.navigate(R.id.onboardingFragment)
+                val navController = navHostFragment.navController
+                if (navController.currentDestination?.id != R.id.onboardingFragment) {
+                    navController.navigate(R.id.onboardingFragment)
+                }
+            }
+        }
+    }
+
+    private fun checkAndRequestPermissions() {
+        val missingPermissions = PermissionHelper.getMissingPermissions(this)
+        if (missingPermissions.isNotEmpty()) {
+            requestAppPermissionsLauncher.launch(missingPermissions)
+        } else {
+            if (PermissionHelper.hasNotificationPermission(this)) {
+                SensorMonitoringService.startService(this)
             }
         }
     }
 
     /**
-     * Configura el ViewPager2 y sincroniza bidireccionalmente con el BottomNavigationView.
+     * Configura Jetpack Navigation asociando el BottomNavigationView directamente al NavController.
      */
-    private fun setupViewPagerAndNavigation() {
-        pagerAdapter = MainPagerAdapter(this)
-        binding.viewPager.adapter = pagerAdapter
-        binding.viewPager.offscreenPageLimit = 3
+    private fun setupNavigation() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+        val navController = navHostFragment.navController
 
-        // Sincronización: Al deslizar horizontalmente en el ViewPager2, actualiza la BottomNavigationView
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                val targetItemId = when (position) {
-                    0 -> R.id.navigation_home
-                    1 -> R.id.navigation_sensors
-                    2 -> R.id.navigation_recommendations
-                    3 -> R.id.navigation_settings
-                    else -> R.id.navigation_home
-                }
-                if (binding.bottomNavigation.selectedItemId != targetItemId) {
-                    binding.bottomNavigation.selectedItemId = targetItemId
-                }
-                updateToolbarTitle(position)
-            }
-        })
+        binding.bottomNavigation.setupWithNavController(navController)
 
-        // Sincronización: Al pulsar un elemento en la BottomNavigationView, desplaza suavemente el ViewPager2
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            val pageIndex = when (item.itemId) {
-                R.id.navigation_home -> 0
-                R.id.navigation_sensors -> 1
-                R.id.navigation_recommendations -> 2
-                R.id.navigation_settings -> 3
-                else -> 0
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.onboardingFragment, R.id.sensorDetailFragment -> {
+                    binding.bottomNavigation.visibility = View.GONE
+                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                }
+                else -> {
+                    binding.bottomNavigation.visibility = View.VISIBLE
+                    supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                }
             }
-            if (binding.viewPager.currentItem != pageIndex) {
-                binding.viewPager.setCurrentItem(pageIndex, true)
-            }
-            true
+            updateToolbarTitle(destination.id)
         }
     }
 
     /**
      * Actualiza el título del Toolbar según la sección seleccionada.
      */
-    private fun updateToolbarTitle(position: Int) {
-        val titleRes = when (position) {
-            0 -> R.string.title_home
-            1 -> R.string.title_sensors
-            2 -> R.string.title_recommendations
-            3 -> R.string.title_settings
-            else -> R.string.title_home
-        }
-        supportActionBar?.setTitle(titleRes)
-    }
-
-    /**
-     * Escucha cambios de destino en el NavHostFragment para manejar sub-pantallas
-     * (Onboarding, Detalle de Sensor).
-     */
-    private fun setupNavHostListener() {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-        val navController = navHostFragment.navController
-
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.onboardingFragment, R.id.sensorDetailFragment -> {
-                    binding.viewPager.visibility = View.GONE
-                    binding.bottomNavigation.visibility = View.GONE
-                    binding.navHostFragmentContentMain.visibility = View.VISIBLE
-                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                }
-                else -> {
-                    binding.viewPager.visibility = View.VISIBLE
-                    binding.bottomNavigation.visibility = View.VISIBLE
-                    binding.navHostFragmentContentMain.visibility = View.GONE
-                    supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                }
-            }
+    private fun updateToolbarTitle(destinationId: Int) {
+        when (destinationId) {
+            R.id.navigation_home -> supportActionBar?.setTitle(R.string.title_home)
+            R.id.navigation_sensors -> supportActionBar?.setTitle(R.string.title_sensors)
+            R.id.navigation_recommendations -> supportActionBar?.setTitle(R.string.title_recommendations)
+            R.id.navigation_settings -> supportActionBar?.setTitle(R.string.title_settings)
+            R.id.sensorDetailFragment -> supportActionBar?.title = "Detalle del Sensor"
+            R.id.onboardingFragment -> supportActionBar?.title = "Bienvenido"
+            else -> supportActionBar?.setTitle(R.string.title_home)
         }
     }
 

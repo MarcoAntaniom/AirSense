@@ -5,12 +5,16 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.airsense.MainActivity
 import com.example.airsense.R
+import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.data.models.AirQualityMetrics
+import kotlinx.coroutines.flow.first
 
 enum class AlertLevel {
     GOOD,
@@ -22,13 +26,14 @@ enum class AlertLevel {
 /**
  * Módulo de gestión de notificaciones para la aplicación AirSense.
  * Permite configurar canales de notificación, enviar alertas amigables por umbrales
- * (temperatura, humedad, calidad del aire/gas) evitando spam mediante un intervalo de enfriamiento (cooldown).
+ * (temperatura, humedad, calidad del aire/gas) evitando spam mediante un intervalo de enfriamiento (cooldown)
+ * y persistencia de nivel de severidad.
  */
 class NotificationHelper(private val context: Context) {
 
-    // Manejo de estado de enfriamiento (cooldown) para evitar spam de alertas
     var cooldownIntervalMillis: Long = DEFAULT_COOLDOWN_MILLIS
     var lastNotificationTimeMillis: Long = 0L
+    var lastNotifiedLevel: AlertLevel = AlertLevel.GOOD
 
     companion object {
         const val CHANNEL_ID = "airsense_alerts_channel"
@@ -49,9 +54,6 @@ class NotificationHelper(private val context: Context) {
         // Cooldown por defecto: 15 minutos
         const val DEFAULT_COOLDOWN_MILLIS = 15 * 60 * 1000L
 
-        /**
-         * Determina el nivel de alerta según el valor del índice AQI.
-         */
         fun getAlertLevel(aqi: Int): AlertLevel {
             return when {
                 aqi <= 50 -> AlertLevel.GOOD
@@ -61,10 +63,6 @@ class NotificationHelper(private val context: Context) {
             }
         }
 
-        /**
-         * Evalúa si debe emitirse una alerta considerando la configuración de usuario y las métricas
-         * (AQI, CO2, PM2.5, así como temperatura y humedad fuera de rangos normales por encima o debajo).
-         */
         fun shouldSendAlert(metrics: AirQualityMetrics, userNotificationsEnabled: Boolean): Boolean {
             if (!userNotificationsEnabled) return false
 
@@ -81,9 +79,6 @@ class NotificationHelper(private val context: Context) {
             return isAirQualityElevated || isTempOutOfBounds || isHumidityOutOfBounds
         }
 
-        /**
-         * Genera un título descriptivo para la notificación de alerta.
-         */
         fun createNotificationTitle(alertLevel: AlertLevel): String {
             return when (alertLevel) {
                 AlertLevel.GOOD -> "Calidad del aire óptima"
@@ -93,42 +88,29 @@ class NotificationHelper(private val context: Context) {
             }
         }
 
-        /**
-         * Formatea el cuerpo del mensaje de alerta según las métricas.
-         */
         fun createNotificationBody(metrics: AirQualityMetrics): String {
             return "AQI: ${metrics.aqi} (${metrics.aqiStatus}) • CO2: ${metrics.co2Ppm} ppm • PM2.5: ${metrics.pm25Ug} µg/m³"
         }
 
-        /**
-         * Genera un título amigable y empático para notificaciones de confort.
-         */
         fun createFriendlyNotificationTitle(metrics: AirQualityMetrics): String {
             return "Consejo de Confort AirSense"
         }
 
-        /**
-         * Genera mensajes amigables, empáticos y orientados a la acción cuando las métricas
-         * están fuera de rangos normales (tanto por encima como por debajo).
-         */
         fun createFriendlyNotificationBody(metrics: AirQualityMetrics): String {
             val messages = mutableListOf<String>()
 
-            // Evaluación de Humedad
             if (metrics.humidityPercentage < HUMIDITY_MIN_NORMAL) {
                 messages.add("Parece que el ambiente está un poco seco (${metrics.humidityPercentage}%). Considera ventilar la habitación o beber agua.")
             } else if (metrics.humidityPercentage > HUMIDITY_MAX_NORMAL) {
                 messages.add("La humedad está algo elevada (${metrics.humidityPercentage}%). Te recomendamos ventilar la habitación para renovar el aire.")
             }
 
-            // Evaluación de Temperatura
             if (metrics.temperatureCelsius < TEMP_MIN_NORMAL) {
                 messages.add("La temperatura ha bajado (${metrics.temperatureCelsius}°C). Abrígate bien o ajusta la calefacción.")
             } else if (metrics.temperatureCelsius > TEMP_MAX_NORMAL) {
                 messages.add("Hace un poco de calor (${metrics.temperatureCelsius}°C). Mantén la habitación ventilada y bebe agua fresca.")
             }
 
-            // Evaluación de Calidad de Aire / CO2 / PM2.5
             if (metrics.aqi > AQI_THRESHOLD || metrics.co2Ppm > CO2_THRESHOLD || metrics.pm25Ug > PM25_THRESHOLD) {
                 messages.add("La calidad del aire no es la ideal (AQI: ${metrics.aqi}). Procura abrir ventanas para renovar el flujo de aire.")
             }
@@ -142,16 +124,24 @@ class NotificationHelper(private val context: Context) {
     }
 
     /**
-     * Verifica si el intervalo de enfriamiento (cooldown) se encuentra activo.
+     * Verifica la validez del permiso POST_NOTIFICATIONS en Android 13+ (API 33+).
      */
+    fun hasPostNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+    }
+
     fun isCooldownActive(currentTimeMillis: Long = System.currentTimeMillis()): Boolean {
         if (lastNotificationTimeMillis == 0L) return false
         return (currentTimeMillis - lastNotificationTimeMillis) < cooldownIntervalMillis
     }
 
-    /**
-     * Crea el canal de notificación en dispositivos con Android 8.0 (API 26) o superior.
-     */
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -164,10 +154,10 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    /**
-     * Construye y publica una notificación garantizando compatibilidad con Android 13+.
-     */
     fun sendNotification(notificationId: Int, title: String, message: String): Boolean {
+        if (!hasPostNotificationPermission()) {
+            return false
+        }
         createNotificationChannel()
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -203,9 +193,6 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    /**
-     * Envía una notificación de prueba para verificar el funcionamiento del módulo.
-     */
     fun sendTestNotification(): Boolean {
         return sendNotification(
             NOTIFICATION_ID_TEST,
@@ -214,21 +201,14 @@ class NotificationHelper(private val context: Context) {
         )
     }
 
-    /**
-     * Envía una alerta si la métrica de calidad de aire excede los umbrales configurados.
-     */
     fun sendAirQualityAlertIfNeeded(metrics: AirQualityMetrics, userNotificationsEnabled: Boolean): Boolean {
         return sendFriendlyThresholdAlertIfNeeded(
             metrics = metrics,
             userNotificationsEnabled = userNotificationsEnabled,
-            forceIgnoreCooldown = true
+            forceIgnoreCooldown = false
         )
     }
 
-    /**
-     * Envía una notificación de alerta amigable por umbrales si las métricas están fuera de rango,
-     * respetando el intervalo de enfriamiento (cooldown) para evitar spam de alertas.
-     */
     fun sendFriendlyThresholdAlertIfNeeded(
         metrics: AirQualityMetrics,
         userNotificationsEnabled: Boolean,
@@ -239,7 +219,10 @@ class NotificationHelper(private val context: Context) {
             return false
         }
 
-        if (!forceIgnoreCooldown && isCooldownActive(currentTimeMillis)) {
+        val currentLevel = getAlertLevel(metrics.aqi)
+        val isWorseLevel = currentLevel.ordinal > lastNotifiedLevel.ordinal
+
+        if (!forceIgnoreCooldown && isCooldownActive(currentTimeMillis) && !isWorseLevel) {
             return false
         }
 
@@ -249,6 +232,45 @@ class NotificationHelper(private val context: Context) {
         val sent = sendNotification(NOTIFICATION_ID_ALERT, title, body)
         if (sent) {
             lastNotificationTimeMillis = currentTimeMillis
+            lastNotifiedLevel = currentLevel
+        }
+        return sent
+    }
+
+    suspend fun sendAlertWithPersistentCooldown(
+        metrics: AirQualityMetrics,
+        userPrefs: UserPreferencesManager,
+        currentTimeMillis: Long = System.currentTimeMillis()
+    ): Boolean {
+        val isEnabled = userPrefs.isNotificationsEnabledFlow.first()
+        if (!shouldSendAlert(metrics, isEnabled)) {
+            return false
+        }
+
+        val lastTimestamp = userPrefs.lastNotifiedTimestampFlow.first()
+        val lastLevelName = userPrefs.lastNotifiedLevelFlow.first()
+        val lastLevel = try {
+            AlertLevel.valueOf(lastLevelName)
+        } catch (_: Exception) {
+            AlertLevel.GOOD
+        }
+
+        val currentLevel = getAlertLevel(metrics.aqi)
+        val isCooldownActive = (currentTimeMillis - lastTimestamp) < cooldownIntervalMillis
+        val isWorseLevel = currentLevel.ordinal > lastLevel.ordinal
+
+        if (isCooldownActive && !isWorseLevel) {
+            return false
+        }
+
+        val title = createFriendlyNotificationTitle(metrics)
+        val body = createFriendlyNotificationBody(metrics)
+
+        val sent = sendNotification(NOTIFICATION_ID_ALERT, title, body)
+        if (sent) {
+            lastNotificationTimeMillis = currentTimeMillis
+            lastNotifiedLevel = currentLevel
+            userPrefs.saveLastNotificationState(currentTimeMillis, currentLevel.name)
         }
         return sent
     }
