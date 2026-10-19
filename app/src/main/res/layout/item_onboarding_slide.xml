@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:gravity="center"
-        android:textColor="@color/airsense_primary"
+        android:textColor="@color/text_primary"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -32,7 +32,7 @@
         android:layout_marginTop="12dp"
         android:gravity="center"
         android:lineSpacingExtra="4dp"
-        android:textColor="@color/airsense_text_muted"
+        android:textColor="@color/text_secondary"
         android:textSize="15sp" />
 
 </LinearLayout>

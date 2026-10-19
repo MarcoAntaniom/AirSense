@@ -12,12 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.AirSenseState
-import com.example.airsense.data.models.SensorDevice
 import com.example.airsense.databinding.FragmentSensorsBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
 import kotlinx.coroutines.launch
@@ -88,7 +87,7 @@ class SensorsFragment : Fragment() {
             )
         }
         binding.rvSensorsList.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = sensorsAdapter
         }
     }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/airsense_bg_light"
+    android:background="@color/bg_screen"
     tools:context=".ui.onboarding.OnboardingFragment">
 
     <androidx.viewpager2.widget.ViewPager2

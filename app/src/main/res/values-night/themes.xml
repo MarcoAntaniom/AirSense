@@ -5,7 +5,13 @@
         <item name="colorOnPrimary">@color/black</item>
         <item name="colorSecondary">@color/airsense_secondary</item>
         <item name="colorOnSecondary">@color/black</item>
-        <item name="android:statusBarColor">#101518</item>
-        <item name="android:windowBackground">@color/airsense_bg_light</item>
+        <item name="colorSurface">@color/bg_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:colorBackground">@color/bg_screen</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
+
+    <style name="Theme.AirSense" parent="Base.Theme.AirSense" />
 </resources>

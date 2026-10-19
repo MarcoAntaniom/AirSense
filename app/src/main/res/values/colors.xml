@@ -11,14 +11,40 @@
     <color name="airsense_accent">#F2A027</color>
     <color name="airsense_accent_light">#FEF5E7</color>
 
-    <color name="airsense_bg_light">#F4F7F6</color>
-    <color name="airsense_card_bg">#FFFFFF</color>
-    <color name="airsense_text_dark">#0F242A</color>
-    <color name="airsense_text_muted">#577077</color>
-    <color name="airsense_divider">#1F000000</color>
+    <!-- Colores Semánticos Base (Modo Claro) -->
+    <color name="bg_screen">#F8FAFC</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_card_subtle">#F1F5F9</color>
+    <color name="stroke_card">#E2E8F0</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="aqi_track">#E2E8F0</color>
+
+    <!-- Compatibilidad y aliases -->
+    <color name="airsense_bg_light">@color/bg_screen</color>
+    <color name="airsense_card_bg">@color/bg_card</color>
+    <color name="card_surface">@color/bg_card</color>
+    <color name="card_stroke">@color/stroke_card</color>
+    <color name="airsense_text_dark">@color/text_primary</color>
+    <color name="airsense_text_muted">@color/text_secondary</color>
+    <color name="airsense_divider">@color/stroke_card</color>
 
     <!-- Indicator Colors -->
     <color name="status_good">#149B93</color>
     <color name="status_warning">#F2A027</color>
     <color name="status_danger">#E53935</color>
+
+    <!-- Semáforo Calidad del Aire (AQI) -->
+    <color name="aqi_good">#10B981</color>
+    <color name="aqi_good_bg">#D1FAE5</color>
+
+    <color name="aqi_moderate">#F59E0B</color>
+    <color name="aqi_moderate_bg">#FEF3C7</color>
+
+    <color name="aqi_danger">#EF4444</color>
+    <color name="aqi_danger_bg">#FEE2E2</color>
+
+    <!-- Acentos Clima -->
+    <color name="temp_accent">#F97316</color>
+    <color name="humidity_accent">#0EA5E9</color>
 </resources>

@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.airsense.databinding.FragmentSensorDetailBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 
-class SensorDetailFragment : Fragment() {
+class SensorDetailFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentSensorDetailBinding? = null
     private val binding get() = _binding!!

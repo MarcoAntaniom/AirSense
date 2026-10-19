@@ -37,7 +37,7 @@
             app:destination="@id/sensorDetailFragment" />
     </fragment>
 
-    <fragment
+    <dialog
         android:id="@+id/sensorDetailFragment"
         android:name="com.example.airsense.ui.sensors.SensorDetailFragment"
         android:label="Detalle del Sensor"
@@ -58,7 +58,7 @@
             android:name="batteryLevel"
             android:defaultValue="100"
             app:argType="integer" />
-    </fragment>
+    </dialog>
 
     <fragment
         android:id="@+id/navigation_recommendations"

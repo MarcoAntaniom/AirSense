@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark theme surfaces with strong contrast -->
-    <color name="airsense_bg_light">#101518</color>
-    <color name="airsense_card_bg">#1A2328</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 
-    <!-- High contrast text and icon colors for dark backgrounds -->
+    <!-- High contrast brand colors for dark backgrounds -->
     <color name="airsense_primary">#4DD0E1</color>
     <color name="airsense_primary_dark">#26C6DA</color>
     <color name="airsense_secondary">#26A69A</color>
@@ -12,12 +11,40 @@
     <color name="airsense_accent">#FFB74D</color>
     <color name="airsense_accent_light">#3E2D18</color>
 
-    <color name="airsense_text_dark">#FFFFFF</color>
-    <color name="airsense_text_muted">#CFD8DC</color>
-    <color name="airsense_divider">#33FFFFFF</color>
+    <!-- Colores Semánticos Base (Modo Oscuro) -->
+    <color name="bg_screen">#0F172A</color>
+    <color name="bg_card">#1E293B</color>
+    <color name="bg_card_subtle">#334155</color>
+    <color name="stroke_card">#334155</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="aqi_track">#334155</color>
+
+    <!-- Compatibilidad y aliases -->
+    <color name="airsense_bg_light">@color/bg_screen</color>
+    <color name="airsense_card_bg">@color/bg_card</color>
+    <color name="card_surface">@color/bg_card</color>
+    <color name="card_stroke">@color/stroke_card</color>
+    <color name="airsense_text_dark">@color/text_primary</color>
+    <color name="airsense_text_muted">@color/text_secondary</color>
+    <color name="airsense_divider">@color/stroke_card</color>
 
     <!-- Indicator status colors for dark mode -->
     <color name="status_good">#26A69A</color>
     <color name="status_warning">#FFA726</color>
     <color name="status_danger">#EF5350</color>
+
+    <!-- Semáforo Calidad del Aire (AQI) Dark Mode -->
+    <color name="aqi_good">#34D399</color>
+    <color name="aqi_good_bg">#064E3B</color>
+
+    <color name="aqi_moderate">#FBBF24</color>
+    <color name="aqi_moderate_bg">#78350F</color>
+
+    <color name="aqi_danger">#F87171</color>
+    <color name="aqi_danger_bg">#7F1D1D</color>
+
+    <!-- Acentos Clima -->
+    <color name="temp_accent">#FB923C</color>
+    <color name="humidity_accent">#38BDF8</color>
 </resources>

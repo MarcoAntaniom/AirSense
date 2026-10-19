@@ -10,7 +10,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/airsense_bg_light">
+        android:background="@color/bg_screen">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sensors_header_title"
-            android:textColor="@color/airsense_text_dark"
+            android:textColor="@color/text_primary"
             android:textSize="22sp"
             android:textStyle="bold" />
 
@@ -32,7 +32,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="20dp"
             android:text="@string/sensors_header_desc"
-            android:textColor="@color/airsense_text_muted"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
         <!-- Sensor Item 1: Calidad del aire -->
@@ -41,9 +41,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -70,7 +71,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:text="@string/feature_air_quality_title"
-                        android:textColor="@color/airsense_primary"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -91,7 +92,7 @@
                     android:layout_marginTop="12dp"
                     android:progress="28"
                     app:indicatorColor="@color/status_good"
-                    app:trackColor="@color/airsense_secondary_light"
+                    app:trackColor="@color/bg_card_subtle"
                     app:trackCornerRadius="4dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -102,9 +103,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -131,7 +133,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:text="@string/sensor_co2_title"
-                        android:textColor="@color/airsense_primary"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -140,7 +142,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="420 ppm"
-                        android:textColor="@color/airsense_primary"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -152,7 +154,7 @@
                     android:layout_marginTop="12dp"
                     android:progress="35"
                     app:indicatorColor="@color/airsense_primary"
-                    app:trackColor="@color/airsense_secondary_light"
+                    app:trackColor="@color/bg_card_subtle"
                     app:trackCornerRadius="4dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -163,9 +165,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -184,7 +187,7 @@
                         android:layout_height="24dp"
                         android:contentDescription="@string/feature_temp_title"
                         android:src="@drawable/ic_temp"
-                        app:tint="@color/airsense_accent" />
+                        app:tint="@color/temp_accent" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -192,7 +195,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:text="@string/feature_temp_title"
-                        android:textColor="@color/airsense_primary"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -201,7 +204,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="22.5 °C"
-                        android:textColor="@color/airsense_accent"
+                        android:textColor="@color/temp_accent"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -212,8 +215,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:progress="60"
-                    app:indicatorColor="@color/airsense_accent"
-                    app:trackColor="@color/airsense_accent_light"
+                    app:indicatorColor="@color/temp_accent"
+                    app:trackColor="@color/bg_card_subtle"
                     app:trackCornerRadius="4dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -224,9 +227,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -245,7 +249,7 @@
                         android:layout_height="24dp"
                         android:contentDescription="@string/feature_humidity_title"
                         android:src="@drawable/ic_humidity"
-                        app:tint="@color/airsense_secondary" />
+                        app:tint="@color/humidity_accent" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -253,7 +257,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:text="@string/feature_humidity_title"
-                        android:textColor="@color/airsense_primary"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -262,7 +266,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="54 %"
-                        android:textColor="@color/airsense_secondary"
+                        android:textColor="@color/humidity_accent"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -273,8 +277,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:progress="54"
-                    app:indicatorColor="@color/airsense_secondary"
-                    app:trackColor="@color/airsense_secondary_light"
+                    app:indicatorColor="@color/humidity_accent"
+                    app:trackColor="@color/bg_card_subtle"
                     app:trackCornerRadius="4dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -286,7 +290,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="12dp"
             android:text="Dispositivos &amp; Sensores IoT"
-            android:textColor="@color/airsense_text_dark"
+            android:textColor="@color/text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
 

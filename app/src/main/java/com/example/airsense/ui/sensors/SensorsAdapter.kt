@@ -1,5 +1,6 @@
 package com.example.airsense.ui.sensors
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -32,21 +33,15 @@ class SensorsAdapter(
         val sensor = sensors[position]
         val context = holder.itemView.context
 
-        holder.binding.tvItemSensorName.text = sensor.name
-        holder.binding.tvItemSensorType.text = "${sensor.type} • ID: ${sensor.id}"
-        holder.binding.tvItemSensorReading.text = sensor.lastReading
+        holder.binding.tvSensorName.text = sensor.name
+        holder.binding.tvSensorMainMetric.text = sensor.lastReading
 
-        if (sensor.isOnline) {
-            holder.binding.tvItemSensorStatus.text = "• En Línea (${sensor.batteryLevel}% Bat)"
-            holder.binding.tvItemSensorStatus.setTextColor(
-                ContextCompat.getColor(context, R.color.status_good)
-            )
+        val statusColor = if (sensor.isOnline) {
+            ContextCompat.getColor(context, R.color.aqi_good)
         } else {
-            holder.binding.tvItemSensorStatus.text = "• Desconectado"
-            holder.binding.tvItemSensorStatus.setTextColor(
-                ContextCompat.getColor(context, R.color.airsense_text_muted)
-            )
+            ContextCompat.getColor(context, R.color.text_secondary)
         }
+        holder.binding.viewStatusDot.backgroundTintList = ColorStateList.valueOf(statusColor)
 
         val iconRes = when {
             sensor.type.contains("AQI", ignoreCase = true) -> R.drawable.ic_air_quality
@@ -54,7 +49,7 @@ class SensorsAdapter(
             sensor.type.contains("Humedad", ignoreCase = true) -> R.drawable.ic_humidity
             else -> R.drawable.ic_iot
         }
-        holder.binding.imgSensorTypeIcon.setImageResource(iconRes)
+        holder.binding.ivSensorIcon.setImageResource(iconRes)
 
         holder.itemView.setOnClickListener {
             onSensorClick(sensor)

@@ -1,314 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/swipe_refresh_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment">
+    android:background="@color/bg_screen"
+    android:fillViewport="true">
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/airsense_bg_light"
-        android:fillViewport="true">
-
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- App Branding Header Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
+        <!-- Cabecera Minimalista: Solo Ubicación e Ícono de Refrescar -->
+        <TextView
+            android:id="@+id/tvLocation"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
+            android:text="Mi Hogar"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/btnRefresh"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Actualizar"
+            android:src="@drawable/ic_refresh"
+            app:tint="@color/text_secondary"
+            app:layout_constraintBottom_toBottomOf="@id/tvLocation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvLocation" />
+
+        <!-- MEDIDOR CENTRAL DE CALIDAD DEL AIRE (CERO TEXTO INNECESARIO) -->
+        <FrameLayout
+            android:id="@+id/gaugeContainer"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_marginTop="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvLocation">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/aqiProgressIndicator"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:max="300"
+                android:progress="42"
+                app:indicatorColor="@color/aqi_good"
+                app:indicatorSize="220dp"
+                app:trackColor="@color/aqi_track"
+                app:trackCornerRadius="12dp"
+                app:trackThickness="16dp" />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/app_name"
-                    android:textColor="@color/airsense_primary"
-                    android:textSize="26sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center"
-                    android:text="@string/welcome_subtitle"
-                    android:textColor="@color/airsense_text_muted"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Live Status Summary Header with Refresh Button -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:id="@+id/tv_live_status_header"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:text="@string/section_live_status_title"
-                android:textColor="@color/airsense_text_dark"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_refresh_weather"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:contentDescription="@string/cd_refresh_weather"
-                app:icon="@drawable/ic_refresh"
-                app:iconTint="@color/airsense_primary" />
-        </RelativeLayout>
-
-        <!-- Loading Indicator -->
-        <ProgressBar
-            android:id="@+id/progress_loading"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:visibility="gone"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Error / Offline Alert Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_error_state"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:visibility="gone"
-            app:cardCornerRadius="12dp"
-            app:cardBackgroundColor="#FFEBEE"
-            app:strokeColor="#FFCDD2"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="12dp">
-
-                <TextView
-                    android:id="@+id/tv_error_message"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/error_weather_connection"
-                    android:textColor="#D32F2F"
-                    android:textSize="13sp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_retry"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:text="@string/btn_retry_text"
-                    android:textColor="#D32F2F" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/airsense_primary"
-            app:strokeWidth="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/tvAqiValue"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <!-- AQI Status -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:contentDescription="@string/status_aqi_label"
-                            android:src="@drawable/ic_air_quality"
-                            app:tint="@color/airsense_secondary" />
-
-                        <TextView
-                            android:id="@+id/tv_home_aqi_val"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="28 AQI"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_home_aqi_status"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Aire Excelente"
-                            android:textColor="@color/airsense_secondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="#33FFFFFF" />
-
-                    <!-- Temp Status -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:contentDescription="@string/status_temp_label"
-                            android:src="@drawable/ic_temp"
-                            app:tint="@color/airsense_accent" />
-
-                        <TextView
-                            android:id="@+id/tv_home_temp_val"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="22.5 °C"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Temperatura"
-                            android:textColor="#CCFFFFFF"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="#33FFFFFF" />
-
-                    <!-- Humidity Status -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:contentDescription="@string/status_humidity_label"
-                            android:src="@drawable/ic_humidity"
-                            app:tint="@color/airsense_secondary" />
-
-                        <TextView
-                            android:id="@+id/tv_home_humidity_val"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="54 %"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Humedad"
-                            android:textColor="#CCFFFFFF"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Footer info badge inside live status card -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#22FFFFFF" />
+                    android:includeFontPadding="false"
+                    android:textColor="@color/text_primary"
+                    android:textSize="56sp"
+                    android:textStyle="bold"
+                    tools:text="42" />
 
                 <TextView
-                    android:id="@+id/tv_home_last_updated"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="10dp"
-                    android:text="@string/status_api_source"
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="11sp" />
+                    android:text="AQI"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.1" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAqiStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="false"
+                    android:text="Óptimo"
+                    android:textColor="@color/aqi_good"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:chipBackgroundColor="@color/aqi_good_bg"
+                    app:chipMinTouchTargetSize="0dp"
+                    app:chipStrokeWidth="0dp" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </FrameLayout>
 
-        <!-- Section: What does AirSense do? -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/section_capabilities_title"
-            android:textColor="@color/airsense_text_dark"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/section_capabilities_subtitle"
-            android:textColor="@color/airsense_text_muted"
-            android:textSize="14sp" />
-
-        <!-- Feature 1: Calidad del Aire -->
+        <!-- BANNER COMPACTO DE ACCIÓN (Reemplaza textos largos de Recomendaciones) -->
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
+            android:id="@+id/cardQuickRecommendation"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
+            android:layout_marginTop="24dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/gaugeContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -317,232 +122,159 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp">
+                <ImageView
+                    android:id="@+id/ivRecIcon"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_status_dot"
+                    android:backgroundTint="@color/aqi_good_bg"
+                    android:contentDescription="Icono recomendacion"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_air_quality"
+                    app:tint="@color/aqi_good" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvRecTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ventilar ahora"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvRecSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Aire exterior limpio · 15 min"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- GRILLA BENTO: 2 COLUMNAS PARA TEMPERATURA Y HUMEDAD -->
+        <LinearLayout
+            android:id="@+id/bentoClimateRow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardQuickRecommendation">
+
+            <!-- Tarjeta Temperatura -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="130dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/stroke_card"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp">
 
                     <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/airsense_secondary_light"
-                        android:contentDescription="@string/feature_air_quality_title"
-                        android:padding="10dp"
-                        android:src="@drawable/ic_air_quality"
-                        app:tint="@color/airsense_secondary" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                        android:id="@+id/ivTemp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:contentDescription="Icono temperatura"
+                        android:src="@drawable/ic_temp"
+                        app:tint="@color/temp_accent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
+                        android:id="@+id/tvTempValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/feature_air_quality_title"
-                        android:textColor="@color/airsense_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:text="22°"
+                        android:textColor="@color/text_primary"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@id/tvTempLabel"
+                        app:layout_constraintStart_toStartOf="parent" />
 
                     <TextView
-                        android:id="@+id/tv_home_feature_aqi_reading"
+                        android:id="@+id/tvTempLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Lectura: 28 AQI • PM2.5: 8 µg/m³"
-                        android:textColor="@color/airsense_secondary"
+                        android:text="Confortable"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tarjeta Humedad -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="130dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/stroke_card"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivHumidity"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:contentDescription="Icono humedad"
+                        android:src="@drawable/ic_humidity"
+                        app:tint="@color/humidity_accent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
+                        android:id="@+id/tvHumidityValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/feature_air_quality_desc"
-                        android:textColor="@color/airsense_text_muted"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Feature 2: Monitoreo de Temperatura -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@color/airsense_accent_light"
-                    android:contentDescription="@string/feature_temp_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_temp"
-                    app:tint="@color/airsense_accent" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                        android:text="55%"
+                        android:textColor="@color/text_primary"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@id/tvHumidityLabel"
+                        app:layout_constraintStart_toStartOf="parent" />
 
                     <TextView
+                        android:id="@+id/tvHumidityLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/feature_temp_title"
-                        android:textColor="@color/airsense_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_home_feature_temp_reading"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Lectura: 22.5 °C"
-                        android:textColor="@color/airsense_accent"
+                        android:text="Humedad ideal"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/feature_temp_desc"
-                        android:textColor="@color/airsense_text_muted"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-        <!-- Feature 3: Control de Humedad -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@color/airsense_secondary_light"
-                    android:contentDescription="@string/feature_humidity_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_humidity"
-                    app:tint="@color/airsense_primary" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/feature_humidity_title"
-                        android:textColor="@color/airsense_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_home_feature_humidity_reading"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Lectura: 54 %"
-                        android:textColor="@color/airsense_secondary"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/feature_humidity_desc"
-                        android:textColor="@color/airsense_text_muted"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Feature 4: Conectividad IoT & Alertas -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/airsense_card_bg"
-            app:strokeWidth="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@color/airsense_secondary_light"
-                    android:contentDescription="@string/feature_iot_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_iot"
-                    app:tint="@color/airsense_secondary" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/feature_iot_title"
-                        android:textColor="@color/airsense_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/feature_iot_desc"
-                        android:textColor="@color/airsense_text_muted"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

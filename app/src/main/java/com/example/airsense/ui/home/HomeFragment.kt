@@ -1,9 +1,11 @@
 package com.example.airsense.ui.home
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -11,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
-import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.AirSenseState
 import com.example.airsense.databinding.FragmentHomeBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
@@ -24,6 +25,7 @@ class HomeFragment : Fragment() {
     private val sharedViewModel: SharedAirSenseViewModel by activityViewModels()
     private lateinit var userPrefs: UserPreferencesManager
     private var currentTempCelsius: Double = 22.5
+    private var isFahrenheit: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,7 +51,8 @@ class HomeFragment : Fragment() {
                 }
                 launch {
                     userPrefs.useFahrenheitFlow.collect { useFahrenheit ->
-                        updateTemperatureDisplay(useFahrenheit)
+                        isFahrenheit = useFahrenheit
+                        updateTemperatureDisplay(isFahrenheit)
                     }
                 }
             }
@@ -57,66 +60,91 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        binding.swipeRefreshLayout.setColorSchemeResources(
-            R.color.airsense_primary,
-            R.color.airsense_secondary
-        )
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            sharedViewModel.fetchRealtimeWeather()
-        }
-
-        binding.btnRefreshWeather.setOnClickListener {
-            binding.swipeRefreshLayout.isRefreshing = true
-            sharedViewModel.fetchRealtimeWeather()
-        }
-
-        binding.btnRetry.setOnClickListener {
-            binding.swipeRefreshLayout.isRefreshing = true
+        binding.btnRefresh.setOnClickListener {
             sharedViewModel.fetchRealtimeWeather()
         }
     }
 
     private fun renderAirSenseState(state: AirSenseState) {
-        binding.swipeRefreshLayout.isRefreshing = false
-
         when (state) {
             is AirSenseState.Connecting -> {
-                binding.progressLoading.visibility = View.VISIBLE
-                binding.cardErrorState.visibility = View.GONE
+                // Estado conectando
             }
             is AirSenseState.WarmingUp -> {
-                binding.progressLoading.visibility = View.GONE
-                binding.cardErrorState.visibility = View.GONE
-                binding.tvHomeAqiStatus.text = "Precalentando MQ (${state.remainingSeconds}s)"
+                binding.chipAqiStatus.text = "Calentando..."
             }
             is AirSenseState.ActiveValid -> {
-                binding.progressLoading.visibility = View.GONE
-                binding.cardErrorState.visibility = View.GONE
-                displayMetrics(state.metrics, isStale = false, statusLabel = state.level.label)
+                updateModernUi(
+                    aqi = state.metrics.aqi,
+                    temp = state.metrics.temperatureCelsius,
+                    humidity = state.metrics.humidityPercentage
+                )
             }
             is AirSenseState.Stale -> {
-                binding.progressLoading.visibility = View.GONE
-                binding.cardErrorState.visibility = View.GONE
-                displayMetrics(state.lastValidMetrics, isStale = true, statusLabel = "Lectura Desactualizada")
+                updateModernUi(
+                    aqi = state.lastValidMetrics.aqi,
+                    temp = state.lastValidMetrics.temperatureCelsius,
+                    humidity = state.lastValidMetrics.humidityPercentage
+                )
             }
         }
     }
 
-    private fun displayMetrics(metrics: AirQualityMetrics, isStale: Boolean, statusLabel: String) {
-        currentTempCelsius = metrics.temperatureCelsius
+    private fun updateModernUi(aqi: Int, temp: Double, humidity: Int) {
+        currentTempCelsius = temp
 
-        binding.tvHomeAqiVal.text = "${metrics.aqi} AQI"
-        binding.tvHomeAqiStatus.text = statusLabel
-        binding.tvHomeHumidityVal.text = "${metrics.humidityPercentage} %"
+        // 1. Actualizar números principales
+        binding.aqiProgressIndicator.setProgressCompat(aqi, true)
+        binding.tvAqiValue.text = aqi.toString()
+        updateTemperatureDisplay(isFahrenheit)
+        binding.tvHumidityValue.text = "$humidity%"
 
-        binding.tvHomeLastUpdated.text = if (isStale) {
-            "⚠️ Lectura Desactualizada"
-        } else {
-            "📡 ${metrics.lastUpdated}"
+        // 2. Semáforo visual dinámico (Cambia colores y acciones breves según AQI)
+        val context = requireContext()
+        when {
+            aqi <= 50 -> {
+                val colorGood = ContextCompat.getColor(context, R.color.aqi_good)
+                val bgGood = ContextCompat.getColor(context, R.color.aqi_good_bg)
+
+                binding.aqiProgressIndicator.setIndicatorColor(colorGood)
+                binding.chipAqiStatus.text = "Óptimo"
+                binding.chipAqiStatus.setTextColor(colorGood)
+                binding.chipAqiStatus.chipBackgroundColor = ColorStateList.valueOf(bgGood)
+                binding.ivRecIcon.backgroundTintList = ColorStateList.valueOf(bgGood)
+                binding.ivRecIcon.imageTintList = ColorStateList.valueOf(colorGood)
+
+                binding.tvRecTitle.text = "Ventilar ahora"
+                binding.tvRecSubtitle.text = "Aire limpio · 15 min"
+            }
+            aqi in 51..100 -> {
+                val colorMod = ContextCompat.getColor(context, R.color.aqi_moderate)
+                val bgMod = ContextCompat.getColor(context, R.color.aqi_moderate_bg)
+
+                binding.aqiProgressIndicator.setIndicatorColor(colorMod)
+                binding.chipAqiStatus.text = "Moderado"
+                binding.chipAqiStatus.setTextColor(colorMod)
+                binding.chipAqiStatus.chipBackgroundColor = ColorStateList.valueOf(bgMod)
+                binding.ivRecIcon.backgroundTintList = ColorStateList.valueOf(bgMod)
+                binding.ivRecIcon.imageTintList = ColorStateList.valueOf(colorMod)
+
+                binding.tvRecTitle.text = "Ventilación breve"
+                binding.tvRecSubtitle.text = "Sensibles: precaución"
+            }
+            else -> {
+                val colorDanger = ContextCompat.getColor(context, R.color.aqi_danger)
+                val bgDanger = ContextCompat.getColor(context, R.color.aqi_danger_bg)
+
+                binding.aqiProgressIndicator.setIndicatorColor(colorDanger)
+                binding.chipAqiStatus.text = "Alerta"
+                binding.chipAqiStatus.setTextColor(colorDanger)
+                binding.chipAqiStatus.chipBackgroundColor = ColorStateList.valueOf(bgDanger)
+                binding.ivRecIcon.backgroundTintList = ColorStateList.valueOf(bgDanger)
+                binding.ivRecIcon.imageTintList = ColorStateList.valueOf(colorDanger)
+
+                binding.tvRecTitle.text = "Cerrar ventanas"
+                binding.tvRecSubtitle.text = "Encender purificador"
+            }
         }
-
-        binding.tvHomeFeatureAqiReading.text = "Lectura: ${metrics.co2Ppm} PPM Gas • ${metrics.aqi} AQI • PM2.5: ${metrics.pm25Ug} µg/m³"
-        binding.tvHomeFeatureHumidityReading.text = "Lectura: ${metrics.humidityPercentage}% HR (DHT11)"
     }
 
     private fun updateTemperatureDisplay(useFahrenheit: Boolean) {
@@ -124,8 +152,7 @@ class HomeFragment : Fragment() {
             currentTempCelsius,
             useFahrenheit
         )
-        _binding?.tvHomeTempVal?.text = formattedTemp
-        _binding?.tvHomeFeatureTempReading?.text = "Lectura: $formattedTemp"
+        _binding?.tvTempValue?.text = formattedTemp
     }
 
     override fun onDestroyView() {
