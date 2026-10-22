@@ -18,6 +18,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+enum class TourStep {
+    NONE, HOME, SENSORS, SENSOR_DETAIL, RECOMMENDATIONS, SETTINGS
+}
+
 class SharedAirSenseViewModel(
     application: Application
 ) : AndroidViewModel(application) {
@@ -32,6 +36,9 @@ class SharedAirSenseViewModel(
 
     private val _airQualityMetrics = MutableStateFlow<AirQualityMetrics?>(null)
     val airQualityMetrics: StateFlow<AirQualityMetrics?> = _airQualityMetrics.asStateFlow()
+
+    private val _currentTourStep = MutableStateFlow(TourStep.NONE)
+    val currentTourStep: StateFlow<TourStep> = _currentTourStep.asStateFlow()
 
     val sensors: StateFlow<List<SensorDevice>> = sensorsRepository.sensors
         .stateIn(
@@ -73,6 +80,28 @@ class SharedAirSenseViewModel(
                 }
             }
         }
+    }
+
+    fun startTour() {
+        _currentTourStep.value = TourStep.HOME
+        viewModelScope.launch {
+            userPrefs.setFirstRunCompleted(false)
+        }
+    }
+
+    fun setTourStep(step: TourStep) {
+        _currentTourStep.value = step
+    }
+
+    fun completeTour() {
+        _currentTourStep.value = TourStep.NONE
+        viewModelScope.launch {
+            userPrefs.setFirstRunCompleted(true)
+        }
+    }
+
+    fun cancelTour() {
+        _currentTourStep.value = TourStep.NONE
     }
 
     fun updateMetrics(metrics: AirQualityMetrics) {

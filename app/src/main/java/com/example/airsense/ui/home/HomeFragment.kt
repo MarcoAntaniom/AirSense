@@ -9,13 +9,17 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.AirSenseState
 import com.example.airsense.databinding.FragmentHomeBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
+import com.example.airsense.ui.TourStep
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 
 class HomeFragment : Fragment() {
 
@@ -52,8 +56,50 @@ class HomeFragment : Fragment() {
                         updateTemperatureDisplay(useFahrenheit)
                     }
                 }
+                launch {
+                    sharedViewModel.currentTourStep.collect { step ->
+                        if (step == TourStep.HOME) {
+                            showHomeTour()
+                        }
+                    }
+                }
+                // Auto-start tour if it's the first run and no tour is active
+                launch {
+                    val isFirstRun = userPrefs.isFirstRunFlow.first()
+                    if (isFirstRun && sharedViewModel.currentTourStep.value == TourStep.NONE) {
+                        sharedViewModel.startTour()
+                    }
+                }
             }
         }
+    }
+
+    private fun showHomeTour() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.btnRefreshWeather)
+            .setPrimaryText("Inicio: Resumen General")
+            .setSecondaryText("Esta es tu pantalla principal. Aquí puedes actualizar los datos del clima y sensores en cualquier momento.")
+            .setBackButtonDismissEnabled(true)
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    showTourStep2()
+                }
+            }
+            .show()
+    }
+
+    private fun showTourStep2() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.tvHomeAqiVal)
+            .setPrimaryText("Estado del Aire")
+            .setSecondaryText("Observa el nivel de calidad del aire actual. Ahora pasemos a ver los sensores en detalle.")
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    sharedViewModel.setTourStep(TourStep.SENSORS)
+                    findNavController().navigate(R.id.navigation_sensors)
+                }
+            }
+            .show()
     }
 
     private fun setupListeners() {

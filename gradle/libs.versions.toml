@@ -16,6 +16,7 @@ securityCrypto = "1.1.0-alpha06"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 swiperefreshlayout = "1.1.0"
+material-tap-target-prompt = "3.3.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +38,7 @@ retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.r
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+material-tap-target-prompt = { group = "uk.co.samuelwall", name = "material-tap-target-prompt", version.ref = "material-tap-target-prompt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -17,14 +17,17 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.databinding.FragmentSettingsBinding
 import com.example.airsense.notifications.NotificationHelper
 import com.example.airsense.ui.SharedAirSenseViewModel
+import com.example.airsense.ui.TourStep
 import com.example.airsense.utils.PermissionHelper
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 
 class SettingsFragment : Fragment() {
 
@@ -80,6 +83,7 @@ class SettingsFragment : Fragment() {
 
         setupTestNotificationButton()
         setupSystemPermissionsSection()
+        setupTourButton()
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -124,8 +128,41 @@ class SettingsFragment : Fragment() {
                         setupUnitToggleListener()
                     }
                 }
+                launch {
+                    sharedViewModel.currentTourStep.collect { step ->
+                        if (step == TourStep.SETTINGS) {
+                            showSettingsTour()
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private fun showSettingsTour() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.toggleGroupTheme)
+            .setPrimaryText("Personalización")
+            .setSecondaryText("Cambia el tema de la app (Claro, Oscuro o Sistema) y ajusta las unidades de temperatura según tu preferencia.")
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    showTourStep2()
+                }
+            }
+            .show()
+    }
+
+    private fun showTourStep2() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.btnRepeatTour)
+            .setPrimaryText("Fin del Tour")
+            .setSecondaryText("¡Todo listo! Si alguna vez necesitas recordar estas funciones, puedes reiniciar el tour desde este botón.")
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    sharedViewModel.completeTour()
+                }
+            }
+            .show()
     }
 
     override fun onResume() {
@@ -258,6 +295,20 @@ class SettingsFragment : Fragment() {
 
     private fun updateUnitButtonText(useFahrenheit: Boolean) {
         _binding?.btnUnitToggle?.text = if (useFahrenheit) "Fahrenheit (°F)" else "Celsius (°C)"
+    }
+
+    private fun setupTourButton() {
+        binding.btnRepeatTour.setOnClickListener {
+            lifecycleScope.launch {
+                // 1. Reiniciar el flag de persistencia
+                userPrefs.setFirstRunCompleted(false)
+                // 2. Establecer el paso inicial del tour en el ViewModel compartido
+                sharedViewModel.startTour()
+                // 3. Navegar al Home para iniciar el flujo
+                findNavController().navigate(R.id.navigation_home)
+                Toast.makeText(requireContext(), "Iniciando tour completo...", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

@@ -173,6 +173,23 @@
                         app:cornerRadius="20dp" />
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@color/airsense_divider" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_repeat_tour"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Repetir Tour"
+                    android:textColor="@color/airsense_primary"
+                    app:icon="@drawable/ic_iot"
+                    app:iconTint="@color/airsense_primary" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

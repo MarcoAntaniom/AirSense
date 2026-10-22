@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Escuchar el Modo de Tema (Sistema, Claro, Oscuro) de forma asíncrona
         lifecycleScope.launch {
             userPrefs.themeModeFlow.collect { themeMode ->
                 val targetMode = when (themeMode) {
@@ -60,22 +59,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         setSupportActionBar(binding.toolbar)
-
-        // Solicitar permisos del sistema
         checkAndRequestPermissions()
-
-        // Configurar navegación unificada con Jetpack Navigation
         setupNavigation()
 
-        // Router Evaluation: si es la primera ejecución, navegar a Onboarding
         lifecycleScope.launch {
-            val isFirstRun = userPrefs.isFirstRunFlow.first()
-            if (isFirstRun) {
-                val navHostFragment = supportFragmentManager
-                    .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-                val navController = navHostFragment.navController
-                if (navController.currentDestination?.id != R.id.onboardingFragment) {
-                    navController.navigate(R.id.onboardingFragment)
+            val isLoggedIn = userPrefs.isLoggedInFlow.first()
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+            val navController = navHostFragment.navController
+
+            if (!isLoggedIn) {
+                if (navController.currentDestination?.id != R.id.loginFragment) {
+                    navController.navigate(R.id.loginFragment)
+                }
+            } else {
+                // Redirección simplificada: Siempre vamos a Home.
+                // La lógica del tour interactivo se maneja dentro de cada fragmento basándose en el ViewModel compartido.
+                if (navController.currentDestination?.id == R.id.loginFragment || 
+                    navController.currentDestination?.id == R.id.onboardingFragment) {
+                    navController.navigate(R.id.navigation_home)
                 }
             }
         }
@@ -92,9 +94,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Configura Jetpack Navigation asociando el BottomNavigationView directamente al NavController.
-     */
     private fun setupNavigation() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
@@ -104,9 +103,9 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.onboardingFragment, R.id.sensorDetailFragment -> {
+                R.id.loginFragment, R.id.onboardingFragment, R.id.sensorDetailFragment -> {
                     binding.bottomNavigation.visibility = View.GONE
-                    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                    supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.loginFragment)
                 }
                 else -> {
                     binding.bottomNavigation.visibility = View.VISIBLE
@@ -117,9 +116,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Actualiza el título del Toolbar según la sección seleccionada.
-     */
     private fun updateToolbarTitle(destinationId: Int) {
         when (destinationId) {
             R.id.navigation_home -> supportActionBar?.setTitle(R.string.title_home)
@@ -128,6 +124,7 @@ class MainActivity : AppCompatActivity() {
             R.id.navigation_settings -> supportActionBar?.setTitle(R.string.title_settings)
             R.id.sensorDetailFragment -> supportActionBar?.title = "Detalle del Sensor"
             R.id.onboardingFragment -> supportActionBar?.title = "Bienvenido"
+            R.id.loginFragment -> supportActionBar?.title = "Iniciar Sesión"
             else -> supportActionBar?.setTitle(R.string.title_home)
         }
     }

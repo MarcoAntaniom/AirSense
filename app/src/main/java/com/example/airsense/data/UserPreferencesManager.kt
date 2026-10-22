@@ -21,6 +21,7 @@ class UserPreferencesManager(private val context: Context) {
 
     companion object {
         val KEY_IS_FIRST_RUN = booleanPreferencesKey("is_first_run")
+        val KEY_IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
         val KEY_DARK_MODE = booleanPreferencesKey("dark_mode")
         val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
@@ -53,6 +54,10 @@ class UserPreferencesManager(private val context: Context) {
 
     val isFirstRunFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[KEY_IS_FIRST_RUN] ?: true
+    }
+
+    val isLoggedInFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_IS_LOGGED_IN] ?: false
     }
 
     val themeModeFlow: Flow<String> = context.dataStore.data.map { preferences ->
@@ -99,9 +104,15 @@ class UserPreferencesManager(private val context: Context) {
         )
     }
 
-    suspend fun setFirstRunCompleted() {
+    suspend fun setFirstRunCompleted(completed: Boolean = true) {
         context.dataStore.edit { preferences ->
-            preferences[KEY_IS_FIRST_RUN] = false
+            preferences[KEY_IS_FIRST_RUN] = !completed
+        }
+    }
+
+    suspend fun setLoggedIn(loggedIn: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_IS_LOGGED_IN] = loggedIn
         }
     }
 

@@ -9,9 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import com.example.airsense.R
 import com.example.airsense.databinding.FragmentSensorDetailBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
+import com.example.airsense.ui.TourStep
 import kotlinx.coroutines.launch
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 
 class SensorDetailFragment : Fragment() {
 
@@ -31,7 +35,6 @@ class SensorDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Valores por defecto obtenidos desde Navigation Bundle
         val defaultSensorId = arguments?.getString("sensorId") ?: "sns_01"
         val defaultSensorName = arguments?.getString("sensorName") ?: "Sensor IoT"
         val defaultSensorType = arguments?.getString("sensorType") ?: "AQI + Temp"
@@ -44,21 +47,43 @@ class SensorDetailFragment : Fragment() {
             batteryLevel = defaultBatteryLevel
         )
 
-        // Observación reactiva desde el SharedViewModel (SSOT)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                sharedViewModel.selectedSensor.collect { sensor ->
-                    if (sensor != null) {
-                        renderSensorDetails(
-                            sensorId = sensor.id,
-                            sensorName = sensor.name,
-                            sensorType = sensor.type,
-                            batteryLevel = sensor.batteryLevel
-                        )
+                launch {
+                    sharedViewModel.selectedSensor.collect { sensor ->
+                        if (sensor != null) {
+                            renderSensorDetails(
+                                sensorId = sensor.id,
+                                sensorName = sensor.name,
+                                sensorType = sensor.type,
+                                batteryLevel = sensor.batteryLevel
+                            )
+                        }
+                    }
+                }
+                launch {
+                    sharedViewModel.currentTourStep.collect { step ->
+                        if (step == TourStep.SENSOR_DETAIL) {
+                            showSensorDetailTour()
+                        }
                     }
                 }
             }
         }
+    }
+
+    private fun showSensorDetailTour() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.tvBatteryLevel)
+            .setPrimaryText("Detalles Específicos")
+            .setSecondaryText("Aquí puedes ver información técnica del sensor seleccionado, como el nivel de batería y el tipo de hardware.")
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    sharedViewModel.setTourStep(TourStep.RECOMMENDATIONS)
+                    findNavController().navigate(R.id.navigation_recommendations)
+                }
+            }
+            .show()
     }
 
     private fun renderSensorDetails(

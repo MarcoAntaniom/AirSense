@@ -17,10 +17,11 @@ import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.AirSenseState
-import com.example.airsense.data.models.SensorDevice
 import com.example.airsense.databinding.FragmentSensorsBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
+import com.example.airsense.ui.TourStep
 import kotlinx.coroutines.launch
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 
 class SensorsFragment : Fragment() {
 
@@ -73,8 +74,55 @@ class SensorsFragment : Fragment() {
                         updateTemperatureDisplay(useFahrenheit)
                     }
                 }
+                launch {
+                    sharedViewModel.currentTourStep.collect { step ->
+                        if (step == TourStep.SENSORS) {
+                            showSensorsTour()
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private fun showSensorsTour() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.progressSensorsAqi)
+            .setPrimaryText("Sensores Detallados")
+            .setSecondaryText("Aquí ves el desglose de cada sensor (AQI, CO2, Temp, Humedad) con barras de progreso para una lectura rápida.")
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    showTourStep2()
+                }
+            }
+            .show()
+    }
+
+    private fun showTourStep2() {
+        MaterialTapTargetPrompt.Builder(requireActivity())
+            .setTarget(binding.rvSensorsList)
+            .setPrimaryText("Dispositivos IoT")
+            .setSecondaryText("Lista de sensores físicos. Pulsa en uno para ver el detalle. Durante el tour, entraremos automáticamente al primero.")
+            .setPromptStateChangeListener { _, state ->
+                if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHED) {
+                    val firstSensor = sharedViewModel.sensors.value.firstOrNull()
+                    if (firstSensor != null) {
+                        sharedViewModel.selectSensor(firstSensor)
+                        sharedViewModel.setTourStep(TourStep.SENSOR_DETAIL)
+                        navigateToSensorDetail(
+                            sensorId = firstSensor.id,
+                            sensorName = firstSensor.name,
+                            sensorType = firstSensor.type,
+                            batteryLevel = firstSensor.batteryLevel
+                        )
+                    } else {
+                        // Fallback if no sensors are found
+                        sharedViewModel.setTourStep(TourStep.RECOMMENDATIONS)
+                        findNavController().navigate(R.id.navigation_recommendations)
+                    }
+                }
+            }
+            .show()
     }
 
     private fun setupRecyclerView() {
@@ -144,12 +192,12 @@ class SensorsFragment : Fragment() {
             "batteryLevel" to batteryLevel
         )
         try {
-            findNavController().navigate(R.id.action_global_sensorDetailFragment, args)
+            findNavController().navigate(R.id.sensorDetailFragment, args)
         } catch (_: Exception) {
             try {
                 val navHostFragment = requireActivity().supportFragmentManager
                     .findFragmentById(R.id.nav_host_fragment_content_main) as? NavHostFragment
-                navHostFragment?.navController?.navigate(R.id.action_global_sensorDetailFragment, args)
+                navHostFragment?.navController?.navigate(R.id.sensorDetailFragment, args)
             } catch (_: Exception) {
             }
         }
