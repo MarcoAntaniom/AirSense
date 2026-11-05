@@ -50,6 +50,15 @@ class HomeFragment : Fragment() {
                     }
                 }
                 launch {
+                    sharedViewModel.isConnected.collect { isConnected ->
+                        if (!isConnected) {
+                            binding.tvLocation.text = "AirSense (Sin Conexión)"
+                        } else {
+                            binding.tvLocation.text = "Estación WeMos D1 (WiFi)"
+                        }
+                    }
+                }
+                launch {
                     userPrefs.useFahrenheitFlow.collect { useFahrenheit ->
                         isFahrenheit = useFahrenheit
                         updateTemperatureDisplay(isFahrenheit)
@@ -68,7 +77,7 @@ class HomeFragment : Fragment() {
     private fun renderAirSenseState(state: AirSenseState) {
         when (state) {
             is AirSenseState.Connecting -> {
-                // Estado conectando
+                binding.chipAqiStatus.text = "Conectando WiFi..."
             }
             is AirSenseState.WarmingUp -> {
                 binding.chipAqiStatus.text = "Calentando..."
@@ -77,31 +86,36 @@ class HomeFragment : Fragment() {
                 updateModernUi(
                     aqi = state.metrics.aqi,
                     temp = state.metrics.temperatureCelsius,
-                    humidity = state.metrics.humidityPercentage
+                    humidity = state.metrics.humidityPercentage,
+                    isOffline = state.isOffline
                 )
             }
             is AirSenseState.Stale -> {
                 updateModernUi(
                     aqi = state.lastValidMetrics.aqi,
                     temp = state.lastValidMetrics.temperatureCelsius,
-                    humidity = state.lastValidMetrics.humidityPercentage
+                    humidity = state.lastValidMetrics.humidityPercentage,
+                    isOffline = true
                 )
             }
         }
     }
 
-    private fun updateModernUi(aqi: Int, temp: Double, humidity: Int) {
+    private fun updateModernUi(aqi: Int, temp: Double, humidity: Int, isOffline: Boolean = false) {
         currentTempCelsius = temp
 
-        // 1. Actualizar números principales
         binding.aqiProgressIndicator.setProgressCompat(aqi, true)
         binding.tvAqiValue.text = aqi.toString()
         updateTemperatureDisplay(isFahrenheit)
         binding.tvHumidityValue.text = "$humidity%"
 
-        // 2. Semáforo visual dinámico (Cambia colores y acciones breves según AQI)
         val context = requireContext()
         when {
+            isOffline -> {
+                val colorStale = ContextCompat.getColor(context, R.color.text_secondary)
+                binding.chipAqiStatus.text = "Desconectado"
+                binding.chipAqiStatus.setTextColor(colorStale)
+            }
             aqi <= 50 -> {
                 val colorGood = ContextCompat.getColor(context, R.color.aqi_good)
                 val bgGood = ContextCompat.getColor(context, R.color.aqi_good_bg)

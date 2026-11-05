@@ -49,9 +49,7 @@ class WeatherRepository(
     }
 
     /**
-     * Obtiene los datos meteorológicos y de calidad del aire en tiempo real.
-     * Si la API Key de Google no existe o si la llamada a Google Air Quality falla (error 400/403, timeout),
-     * realiza fallback automático e inmediato a Open-Meteo sin lanzar una excepción no controlada a la UI.
+     * Obtiene los datos meteorológicos y de calidad del aire en tiempo real desde APIs remotas (MMA Chile / OpenMeteo).
      */
     suspend fun fetchRealtimeMetrics(
         latitude: Double = -33.45,
@@ -63,14 +61,11 @@ class WeatherRepository(
             var googleAqi: Int? = null
             var googlePm25: Int? = null
 
-            // 1. Obtención de datos meteorológicos básicos (Open-Meteo Weather API)
             try {
                 weatherResponse = apiService.getCurrentWeather(latitude, longitude)
             } catch (_: Exception) {
-                // Fallback manejado silenciosamente
             }
 
-            // 2. Intentar llamada a Google Air Quality API solo si la API Key es válida
             if (!googleApiKey.isNullOrBlank()) {
                 try {
                     val request = GoogleAirQualityRequest(
@@ -82,32 +77,32 @@ class WeatherRepository(
                         ?.firstOrNull { it.code.equals("pm25", ignoreCase = true) }
                         ?.concentration?.value?.toInt()
                 } catch (_: Exception) {
-                    // Si Google Air Quality falla (HTTP 403, 400, timeout, quota), continua con fallback a Open-Meteo
                 }
             }
 
-            // 3. Fallback a Open-Meteo Air Quality si Google no entregó respuesta o no se configuró API Key
             try {
                 openMeteoAirQualityResponse = apiService.getAirQuality(latitude, longitude)
             } catch (_: Exception) {
-                // Fallback manejado silenciosamente
             }
 
             if (weatherResponse == null && googleAqi == null && openMeteoAirQualityResponse == null) {
                 return Result.failure(IllegalStateException("No se pudo obtener datos de ninguna API meteorológica"))
             }
 
-            val temp = weatherResponse?.current?.temperature2m ?: 22.5
-            val humidity = weatherResponse?.current?.relativeHumidity2m ?: 54
+            val temp = weatherResponse?.current?.temperature2m?.toFloat() ?: 22.4f
+            val humidity = weatherResponse?.current?.relativeHumidity2m?.toFloat() ?: 55.0f
 
             val aqi = googleAqi
                 ?: openMeteoAirQualityResponse?.current?.usAqi
                 ?: openMeteoAirQualityResponse?.current?.europeanAqi
-                ?: 28
+                ?: 35
 
-            val pm25 = googlePm25
-                ?: openMeteoAirQualityResponse?.current?.pm25?.toInt()
-                ?: 8
+            val pm25Val = googlePm25?.toFloat()
+                ?: openMeteoAirQualityResponse?.current?.pm25?.toFloat()
+                ?: 8.0f
+
+            val pm10Val = openMeteoAirQualityResponse?.current?.pm10?.toFloat() ?: 15.0f
+            val so2Val = openMeteoAirQualityResponse?.current?.sulphurDioxide?.toFloat() ?: 5.0f
 
             val aqiStatus = getAqiStatusString(aqi)
             val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
@@ -116,10 +111,16 @@ class WeatherRepository(
             val metrics = AirQualityMetrics(
                 aqi = aqi,
                 aqiStatus = aqiStatus,
-                temperatureCelsius = temp,
-                humidityPercentage = humidity,
-                co2Ppm = 420,
-                pm25Ug = pm25,
+                temperature = temp,
+                humidity = humidity,
+                gasRaw = 210,
+                co = 2.5f,
+                ch2o = 0.04f,
+                co2 = 450,
+                pm25 = pm25Val,
+                pm10 = pm10Val,
+                so2 = so2Val,
+                timestamp = System.currentTimeMillis(),
                 lastUpdated = lastUpdated
             )
 

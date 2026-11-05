@@ -82,10 +82,12 @@ class BluetoothSensorManager(
         return AirQualityMetrics(
             aqi = (frame.co2Ppm / 15).coerceIn(10, 500),
             aqiStatus = "Sincronizado",
-            temperatureCelsius = frame.temperatureCelsius,
-            humidityPercentage = frame.humidityPercentage,
-            co2Ppm = frame.co2Ppm,
-            pm25Ug = (frame.co2Ppm / 50).coerceIn(1, 150),
+            temperature = frame.temperatureCelsius.toFloat(),
+            humidity = frame.humidityPercentage.toFloat(),
+            gasRaw = 210,
+            co2 = frame.co2Ppm,
+            pm25 = (frame.co2Ppm / 50).coerceIn(1, 150).toFloat(),
+            timestamp = System.currentTimeMillis(),
             lastUpdated = timestamp,
             isMawCalibrated = true
         )

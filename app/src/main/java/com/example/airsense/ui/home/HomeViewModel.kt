@@ -41,12 +41,16 @@ class HomeViewModel(
                     weatherRepository.getCachedMetrics(prefs)
                 }
                 val fallbackMetrics = cached ?: AirQualityMetrics(
-                    aqi = 28,
+                    aqi = 35,
                     aqiStatus = "Excelente",
-                    temperatureCelsius = 22.5,
-                    humidityPercentage = 54,
-                    co2Ppm = 420,
-                    pm25Ug = 8,
+                    temperature = 22.4f,
+                    humidity = 55.0f,
+                    gasRaw = 210,
+                    co = 2.5f,
+                    ch2o = 0.04f,
+                    co2 = 450,
+                    pm25 = 8.0f,
+                    timestamp = System.currentTimeMillis(),
                     lastUpdated = "Modo Local"
                 )
                 _uiState.value = HomeUiState.Success(
@@ -65,4 +69,3 @@ class HomeViewModel(
         _uiState.value = HomeUiState.Error("No pudimos conectar con la API de clima. Por favor reintenta.")
     }
 }
-

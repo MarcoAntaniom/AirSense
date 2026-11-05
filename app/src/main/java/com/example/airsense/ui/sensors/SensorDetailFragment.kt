@@ -31,11 +31,10 @@ class SensorDetailFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Valores por defecto obtenidos desde Navigation Bundle
         val defaultSensorId = arguments?.getString("sensorId") ?: "sns_01"
-        val defaultSensorName = arguments?.getString("sensorName") ?: "Sensor IoT"
+        val defaultSensorName = arguments?.getString("sensorName") ?: "Estación WeMos D1 (WiFi)"
         val defaultSensorType = arguments?.getString("sensorType") ?: "AQI + Temp"
-        val defaultBatteryLevel = arguments?.getInt("batteryLevel") ?: 88
+        val defaultBatteryLevel = arguments?.getInt("batteryLevel") ?: 95
 
         renderSensorDetails(
             sensorId = defaultSensorId,
@@ -44,7 +43,6 @@ class SensorDetailFragment : BottomSheetDialogFragment() {
             batteryLevel = defaultBatteryLevel
         )
 
-        // Observación reactiva desde el SharedViewModel (SSOT)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sharedViewModel.selectedSensor.collect { sensor ->

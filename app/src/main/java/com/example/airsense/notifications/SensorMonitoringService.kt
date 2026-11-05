@@ -59,7 +59,7 @@ class SensorMonitoringService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        sensorRepository = SensorRepository()
+        sensorRepository = SensorRepository(this)
         userPrefs = UserPreferencesManager(this)
         notificationHelper = NotificationHelper(this)
     }
@@ -72,7 +72,7 @@ class SensorMonitoringService : Service() {
         }
 
         createNotificationChannel()
-        startForeground(SERVICE_NOTIFICATION_ID, buildForegroundNotification("Inicializando monitoreo..."))
+        startForeground(SERVICE_NOTIFICATION_ID, buildForegroundNotification("Inicializando monitoreo WiFi WeMos D1..."))
 
         startMonitoring()
         return START_STICKY
@@ -83,7 +83,7 @@ class SensorMonitoringService : Service() {
             sensorRepository.observeSensorState(userPrefs.thresholdsFlow).collect { state ->
                 when (state) {
                     is AirSenseState.ActiveValid -> {
-                        val notifText = "Gas: ${state.metrics.co2Ppm} PPM • Status: ${state.level.label}"
+                        val notifText = "Gas: ${state.metrics.co2} PPM • Status: ${state.level.label}"
                         updateForegroundNotification(notifText)
 
                         if (state.level == AirQualityLevel.UNHEALTHY || state.level == AirQualityLevel.HAZARDOUS) {
@@ -95,13 +95,13 @@ class SensorMonitoringService : Service() {
                         }
                     }
                     is AirSenseState.Stale -> {
-                        updateForegroundNotification("Aviso: Sensor desconectado o reconectando...")
+                        updateForegroundNotification("Aviso: Estación WeMos D1 desconectada (192.168.4.1)...")
                     }
                     is AirSenseState.WarmingUp -> {
-                        updateForegroundNotification("Sensor MQ en precalentamiento (${state.remainingSeconds}s)")
+                        updateForegroundNotification("Sensor en precalentamiento (${state.remainingSeconds}s)")
                     }
                     is AirSenseState.Connecting -> {
-                        updateForegroundNotification("Conectando con estación de sensores...")
+                        updateForegroundNotification("Conectando con estación WiFi AirSense_AP...")
                     }
                 }
             }
@@ -118,7 +118,7 @@ class SensorMonitoringService : Service() {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_air_quality)
-            .setContentTitle("AirSense - Monitoreo Activo")
+            .setContentTitle("AirSense - Monitoreo WiFi Activo")
             .setContentText(contentText)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

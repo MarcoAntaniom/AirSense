@@ -23,7 +23,7 @@ class SharedAirSenseViewModel(
 ) : AndroidViewModel(application) {
 
     private val userPrefs = UserPreferencesManager(application)
-    private val sensorRepository = SensorRepository()
+    private val sensorRepository = SensorRepository(application)
     private val sensorsRepository = SensorsRepository()
     private val weatherRepository = WeatherRepository()
 
@@ -32,6 +32,8 @@ class SharedAirSenseViewModel(
 
     private val _airQualityMetrics = MutableStateFlow<AirQualityMetrics?>(null)
     val airQualityMetrics: StateFlow<AirQualityMetrics?> = _airQualityMetrics.asStateFlow()
+
+    val isConnected: StateFlow<Boolean> = sensorRepository.isConnected
 
     val sensors: StateFlow<List<SensorDevice>> = sensorsRepository.sensors
         .stateIn(
@@ -62,7 +64,7 @@ class SharedAirSenseViewModel(
                     is AirSenseState.ActiveValid -> {
                         val sanitizedMetrics = sensorsRepository.sanitizeMetrics(state.metrics)
                         _airQualityMetrics.value = sanitizedMetrics
-                        sensorsRepository.generateSensorsFromMetrics(sanitizedMetrics, isOnline = true)
+                        sensorsRepository.generateSensorsFromMetrics(sanitizedMetrics, isOnline = !state.isOffline)
                     }
                     is AirSenseState.Stale -> {
                         val sanitizedMetrics = sensorsRepository.sanitizeMetrics(state.lastValidMetrics)

@@ -17,5 +17,7 @@ data class AirQualityCurrentData(
     @SerializedName("pm10")
     val pm10: Double? = null,
     @SerializedName("carbon_monoxide")
-    val carbonMonoxide: Double? = null
+    val carbonMonoxide: Double? = null,
+    @SerializedName("sulphur_dioxide")
+    val sulphurDioxide: Double? = null
 )

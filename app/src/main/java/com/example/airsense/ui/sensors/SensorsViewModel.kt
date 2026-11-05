@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class SensorsViewModel(
     private val weatherRepository: WeatherRepository = WeatherRepository()
@@ -36,11 +37,12 @@ class SensorsViewModel(
                 userPrefs?.let { prefs ->
                     weatherRepository.saveCachedMetrics(prefs, metrics)
                 }
+                val tempFormatted = String.format(Locale.US, "%.1f °C", metrics.temperature)
                 val sensorsList = listOf(
-                    SensorDevice("sns_01", "Estación Clima Principal", "AQI + Temp", 95, true, "${metrics.aqi} AQI"),
-                    SensorDevice("sns_02", "Sensor Temperatura", "Temp + Humedad", 88, true, "${metrics.temperatureCelsius} °C"),
-                    SensorDevice("sns_03", "Sensor Calidad Aire", "CO2 + PM2.5", 90, true, "${metrics.co2Ppm} ppm"),
-                    SensorDevice("sns_04", "Sensor Humedad Amb.", "Humedad Relativa", 82, true, "${metrics.humidityPercentage}%")
+                    SensorDevice("sns_01", "Estación Clima Principal (WeMos D1)", "AQI + Temp", 95, true, "${metrics.aqi} AQI"),
+                    SensorDevice("sns_02", "Sensor Temperatura (DHT11)", "Temp + Humedad", 88, true, tempFormatted),
+                    SensorDevice("sns_03", "Sensor Calidad Aire (MQ)", "Gas MQ + CO2", 90, true, "${metrics.co2} ppm (Gas: ${metrics.gasRaw})"),
+                    SensorDevice("sns_04", "Sensor Humedad Amb.", "Humedad Relativa", 82, true, "${metrics.humidity.toInt()}%")
                 )
                 _uiState.value = SensorsUiState.Success(
                     metrics = metrics,
@@ -52,11 +54,12 @@ class SensorsViewModel(
                     weatherRepository.getCachedMetrics(prefs)
                 }
                 val fallbackMetrics = cachedMetrics ?: AirQualityMetrics()
+                val tempFormatted = String.format(Locale.US, "%.1f °C", fallbackMetrics.temperature)
                 val mockSensors = listOf(
-                    SensorDevice("sns_01", "Estación Clima Principal", "AQI + Temp", 88, false, "${fallbackMetrics.aqi} AQI"),
-                    SensorDevice("sns_02", "Sensor Temperatura", "Temp + Humedad", 95, false, "${fallbackMetrics.temperatureCelsius} °C"),
-                    SensorDevice("sns_03", "Sensor Calidad Aire", "CO2 + PM2.5", 72, false, "${fallbackMetrics.co2Ppm} ppm"),
-                    SensorDevice("sns_04", "Sensor Humedad Amb.", "Humedad Relativa", 80, false, "${fallbackMetrics.humidityPercentage}%")
+                    SensorDevice("sns_01", "Estación Clima Principal (WeMos D1)", "AQI + Temp", 88, false, "${fallbackMetrics.aqi} AQI"),
+                    SensorDevice("sns_02", "Sensor Temperatura (DHT11)", "Temp + Humedad", 95, false, tempFormatted),
+                    SensorDevice("sns_03", "Sensor Calidad Aire (MQ)", "Gas MQ + CO2", 72, false, "${fallbackMetrics.co2} ppm (Gas: ${fallbackMetrics.gasRaw})"),
+                    SensorDevice("sns_04", "Sensor Humedad Amb.", "Humedad Relativa", 80, false, "${fallbackMetrics.humidity.toInt()}%")
                 )
                 _uiState.value = SensorsUiState.Success(
                     metrics = fallbackMetrics,
@@ -75,4 +78,3 @@ class SensorsViewModel(
         _uiState.value = SensorsUiState.Error("Fallo en la sincronización con los sensores.")
     }
 }
-

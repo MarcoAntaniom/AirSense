@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.Locale
 
 /**
  * Repositorio encargado de centralizar y sanitizar el listado de dispositivos IoT (SensorDevice)
@@ -34,8 +35,6 @@ class SensorsRepository {
 
     /**
      * Sanitiza y valida las lecturas de un dispositivo IoT.
-     * Si las lecturas contienen valores fuera de rango físico, corruptos o NaN,
-     * se marca como offline o error.
      */
     fun sanitizeSensor(device: SensorDevice): SensorDevice {
         val reading = device.lastReading
@@ -60,59 +59,93 @@ class SensorsRepository {
      */
     fun sanitizeMetrics(metrics: AirQualityMetrics): AirQualityMetrics {
         val safeAqi = metrics.aqi.coerceAtLeast(0)
-        val safeTemp = if (metrics.temperatureCelsius.isNaN() || metrics.temperatureCelsius < -50.0 || metrics.temperatureCelsius > 100.0) {
-            22.5
-        } else metrics.temperatureCelsius
-        val safeHumidity = metrics.humidityPercentage.coerceIn(0, 100)
-        val safeCo2 = metrics.co2Ppm.coerceAtLeast(0)
-        val safePm25 = metrics.pm25Ug.coerceAtLeast(0)
+        val safeTemp = if (metrics.temperature.isNaN() || metrics.temperature < -50.0f || metrics.temperature > 100.0f) {
+            22.4f
+        } else metrics.temperature
+        val safeHumidity = metrics.humidity.coerceIn(0.0f, 100.0f)
+        val safeCo2 = metrics.co2.coerceAtLeast(0)
 
         return metrics.copy(
             aqi = safeAqi,
-            temperatureCelsius = safeTemp,
-            humidityPercentage = safeHumidity,
-            co2Ppm = safeCo2,
-            pm25Ug = safePm25
+            temperature = safeTemp,
+            humidity = safeHumidity,
+            co2 = safeCo2,
+            co = metrics.co.coerceAtLeast(0f),
+            ch2o = metrics.ch2o.coerceAtLeast(0f),
+            pm25 = metrics.pm25.coerceAtLeast(0f),
+            pm10 = metrics.pm10.coerceAtLeast(0f),
+            so2 = metrics.so2.coerceAtLeast(0f)
         )
     }
 
     /**
-     * Genera la lista estandarizada de dispositivos a partir de las métricas recibidas.
+     * Genera la lista estandarizada de dispositivos a partir de las métricas recibidas de la placa WeMos D1.
      */
     fun generateSensorsFromMetrics(metrics: AirQualityMetrics, isOnline: Boolean): List<SensorDevice> {
-        val sanitizedMetrics = sanitizeMetrics(metrics)
+        val sanitized = sanitizeMetrics(metrics)
+        val tempStr = String.format(Locale.US, "%.1f °C", sanitized.temperature)
+        val coStr = String.format(Locale.US, "%.1f ppm", sanitized.co)
+        val ch2oStr = String.format(Locale.US, "%.2f ppm", sanitized.ch2o)
+        val pm25Str = String.format(Locale.US, "%.1f µg/m³", sanitized.pm25)
+        val pm10Str = String.format(Locale.US, "%.1f µg/m³", sanitized.pm10)
+        val so2Str = String.format(Locale.US, "%.1f µg/m³", sanitized.so2)
+
         val list = listOf(
             SensorDevice(
                 id = "sns_01",
-                name = "Estación Clima Principal",
+                name = "Estación Clima (WeMos D1)",
                 type = "AQI + Temp",
                 batteryLevel = 95,
                 isOnline = isOnline,
-                lastReading = "${sanitizedMetrics.aqi} AQI"
+                lastReading = "${sanitized.aqi} AQI"
             ),
             SensorDevice(
                 id = "sns_02",
-                name = "Sensor Temperatura (DHT11)",
-                type = "Temp + Humedad",
-                batteryLevel = 88,
+                name = "Sensor Monóxido de Carbono (CO)",
+                type = "Gas CO (LPP 40 ppm)",
+                batteryLevel = 90,
                 isOnline = isOnline,
-                lastReading = "${sanitizedMetrics.temperatureCelsius} °C"
+                lastReading = coStr
             ),
             SensorDevice(
                 id = "sns_03",
-                name = "Sensor Calidad Aire (MQ)",
-                type = "Gas MQ + PM2.5",
-                batteryLevel = 90,
+                name = "Sensor Formaldehído (CH₂O)",
+                type = "Gas CH₂O (LPA 0.3 ppm)",
+                batteryLevel = 88,
                 isOnline = isOnline,
-                lastReading = "${sanitizedMetrics.co2Ppm} ppm"
+                lastReading = ch2oStr
             ),
             SensorDevice(
                 id = "sns_04",
-                name = "Sensor Humedad Amb.",
-                type = "Humedad Relativa",
+                name = "Sensor CO₂ / Ventilación",
+                type = "Dióxido de Carbono",
+                batteryLevel = 92,
+                isOnline = isOnline,
+                lastReading = "${sanitized.co2} ppm"
+            ),
+            SensorDevice(
+                id = "sns_05",
+                name = "Sensor Temperatura (TGBH)",
+                type = "DHT11 (Max 26.7 °C)",
+                batteryLevel = 85,
+                isOnline = isOnline,
+                lastReading = tempStr
+            ),
+            SensorDevice(
+                id = "sns_06",
+                name = "Sensor Humedad Relativa",
+                type = "Humedad DHT11",
                 batteryLevel = 82,
                 isOnline = isOnline,
-                lastReading = "${sanitizedMetrics.humidityPercentage}%"
+                lastReading = "${sanitized.humidity.toInt()}%"
+            ),
+            SensorDevice(
+                id = "sns_07",
+                name = "Calidad Exterior (PM2.5 / PM10)",
+                type = "Norma MMA Chile",
+                batteryLevel = 99,
+                isOnline = isOnline,
+                lastReading = "PM2.5: $pm25Str | PM10: $pm10Str | SO2: $so2Str"
             )
         )
         setSensors(list)

@@ -23,7 +23,7 @@ interface WeatherApiService {
     suspend fun getAirQuality(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("current") current: String = "european_aqi,us_aqi,pm2_5,pm10,carbon_monoxide"
+        @Query("current") current: String = "european_aqi,us_aqi,pm2_5,pm10,carbon_monoxide,sulphur_dioxide"
     ): OpenMeteoAirQualityResponse
 
     @POST("https://airquality.googleapis.com/v1/currentConditions:lookup")

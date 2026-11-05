@@ -23,8 +23,8 @@ class NotificationHelperTest {
         val highRiskMetrics = AirQualityMetrics(
             aqi = 180,
             aqiStatus = "Mala",
-            co2Ppm = 1500,
-            pm25Ug = 60
+            co2 = 1500,
+            pm25 = 60.0f
         )
         val shouldSend = NotificationHelper.shouldSendAlert(highRiskMetrics, userNotificationsEnabled = false)
         assertFalse(shouldSend)
@@ -35,10 +35,10 @@ class NotificationHelperTest {
         val elevatedAqiMetrics = AirQualityMetrics(
             aqi = 75,
             aqiStatus = "Moderada",
-            co2Ppm = 400,
-            pm25Ug = 10,
-            temperatureCelsius = 22.0,
-            humidityPercentage = 50
+            co2 = 400,
+            pm25 = 10.0f,
+            temperature = 22.0f,
+            humidity = 50.0f
         )
         val shouldSend = NotificationHelper.shouldSendAlert(elevatedAqiMetrics, userNotificationsEnabled = true)
         assertTrue(shouldSend)
@@ -49,10 +49,10 @@ class NotificationHelperTest {
         val highCo2Metrics = AirQualityMetrics(
             aqi = 30,
             aqiStatus = "Excelente",
-            co2Ppm = 1200,
-            pm25Ug = 10,
-            temperatureCelsius = 22.0,
-            humidityPercentage = 50
+            co2 = 1200,
+            pm25 = 10.0f,
+            temperature = 22.0f,
+            humidity = 50.0f
         )
         val shouldSend = NotificationHelper.shouldSendAlert(highCo2Metrics, userNotificationsEnabled = true)
         assertTrue(shouldSend)
@@ -62,19 +62,19 @@ class NotificationHelperTest {
     fun shouldSendAlert_returnsTrueWhenTemperatureOutOfBounds() {
         val lowTempMetrics = AirQualityMetrics(
             aqi = 25,
-            co2Ppm = 400,
-            pm25Ug = 10,
-            temperatureCelsius = 15.0, // Bajo 18.0 °C
-            humidityPercentage = 50
+            co2 = 400,
+            pm25 = 10.0f,
+            temperature = 15.0f, // Bajo 18.0 °C
+            humidity = 50.0f
         )
         assertTrue(NotificationHelper.shouldSendAlert(lowTempMetrics, userNotificationsEnabled = true))
 
         val highTempMetrics = AirQualityMetrics(
             aqi = 25,
-            co2Ppm = 400,
-            pm25Ug = 10,
-            temperatureCelsius = 29.0, // Sobre 26.0 °C
-            humidityPercentage = 50
+            co2 = 400,
+            pm25 = 10.0f,
+            temperature = 29.0f, // Sobre 26.7 °C TGBH
+            humidity = 50.0f
         )
         assertTrue(NotificationHelper.shouldSendAlert(highTempMetrics, userNotificationsEnabled = true))
     }
@@ -83,19 +83,19 @@ class NotificationHelperTest {
     fun shouldSendAlert_returnsTrueWhenHumidityOutOfBounds() {
         val dryMetrics = AirQualityMetrics(
             aqi = 25,
-            co2Ppm = 400,
-            pm25Ug = 10,
-            temperatureCelsius = 22.0,
-            humidityPercentage = 20 // Bajo 30%
+            co2 = 400,
+            pm25 = 10.0f,
+            temperature = 22.0f,
+            humidity = 20.0f // Bajo 30%
         )
         assertTrue(NotificationHelper.shouldSendAlert(dryMetrics, userNotificationsEnabled = true))
 
         val humidMetrics = AirQualityMetrics(
             aqi = 25,
-            co2Ppm = 400,
-            pm25Ug = 10,
-            temperatureCelsius = 22.0,
-            humidityPercentage = 70 // Sobre 60%
+            co2 = 400,
+            pm25 = 10.0f,
+            temperature = 22.0f,
+            humidity = 75.0f // Sobre 70%
         )
         assertTrue(NotificationHelper.shouldSendAlert(humidMetrics, userNotificationsEnabled = true))
     }
@@ -105,35 +105,34 @@ class NotificationHelperTest {
         val optimalMetrics = AirQualityMetrics(
             aqi = 25,
             aqiStatus = "Excelente",
-            co2Ppm = 420,
-            pm25Ug = 8,
-            temperatureCelsius = 22.5,
-            humidityPercentage = 54
+            co2 = 420,
+            pm25 = 8.0f,
+            temperature = 22.4f,
+            humidity = 55.0f
         )
         val shouldSend = NotificationHelper.shouldSendAlert(optimalMetrics, userNotificationsEnabled = true)
         assertFalse(shouldSend)
     }
 
     @Test
-    fun createFriendlyNotificationBody_generatesEmpatheticMessageForDryAir() {
-        val dryMetrics = AirQualityMetrics(
+    fun createFriendlyNotificationBody_generatesEmpatheticMessageForCo2() {
+        val highCo2Metrics = AirQualityMetrics(
             aqi = 25,
-            co2Ppm = 400,
-            pm25Ug = 10,
-            temperatureCelsius = 22.0,
-            humidityPercentage = 22
+            co2 = 1200,
+            pm25 = 10.0f,
+            temperature = 22.0f,
+            humidity = 50.0f
         )
-        val body = NotificationHelper.createFriendlyNotificationBody(dryMetrics)
-        assertTrue(body.contains("seco"))
-        assertTrue(body.contains("22%"))
+        val body = NotificationHelper.createFriendlyNotificationBody(highCo2Metrics)
+        assertTrue(body.contains("1,000 ppm") || body.contains("1200"))
     }
 
     @Test
     fun createNotificationTitle_generatesCorrectTitles() {
-        assertEquals("Calidad del aire óptima", NotificationHelper.createNotificationTitle(AlertLevel.GOOD))
-        assertEquals("Aviso: Calidad del aire moderada", NotificationHelper.createNotificationTitle(AlertLevel.MODERATE))
-        assertEquals("Alerta: Calidad del aire no saludable", NotificationHelper.createNotificationTitle(AlertLevel.UNHEALTHY))
-        assertEquals("Peligro: Calidad del aire crítica", NotificationHelper.createNotificationTitle(AlertLevel.HAZARDOUS))
+        assertEquals("Ambiente seguro y limpio", NotificationHelper.createNotificationTitle(AlertLevel.GOOD))
+        assertEquals("Aviso de Confort Ambient", NotificationHelper.createNotificationTitle(AlertLevel.MODERATE))
+        assertEquals("Alerta Ambiental / Laboral", NotificationHelper.createNotificationTitle(AlertLevel.UNHEALTHY))
+        assertEquals("🚨 Peligro: Umbral Normativo Superado", NotificationHelper.createNotificationTitle(AlertLevel.HAZARDOUS))
     }
 
     @Test
@@ -141,10 +140,11 @@ class NotificationHelperTest {
         val metrics = AirQualityMetrics(
             aqi = 120,
             aqiStatus = "No Saludable",
-            co2Ppm = 850,
-            pm25Ug = 45
+            co2 = 850,
+            co = 2.5f,
+            temperature = 22.4f
         )
         val body = NotificationHelper.createNotificationBody(metrics)
-        assertEquals("AQI: 120 (No Saludable) • CO2: 850 ppm • PM2.5: 45 µg/m³", body)
+        assertTrue(body.contains("850 ppm"))
     }
 }

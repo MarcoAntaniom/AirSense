@@ -20,6 +20,7 @@ import com.example.airsense.data.models.AirSenseState
 import com.example.airsense.databinding.FragmentSensorsBinding
 import com.example.airsense.ui.SharedAirSenseViewModel
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class SensorsFragment : Fragment() {
 
@@ -28,7 +29,7 @@ class SensorsFragment : Fragment() {
     private val sharedViewModel: SharedAirSenseViewModel by activityViewModels()
     private lateinit var userPrefs: UserPreferencesManager
     private lateinit var sensorsAdapter: SensorsAdapter
-    private var currentTempCelsius: Double = 22.5
+    private var currentTempCelsius: Double = 22.4
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -114,8 +115,10 @@ class SensorsFragment : Fragment() {
         binding.tvSensorsAqiVal.text = "${metrics.aqi} AQI"
         binding.progressSensorsAqi.progress = metrics.aqi.coerceIn(0, 100)
 
-        binding.tvSensorsCo2Val.text = "${metrics.co2Ppm} ppm"
-        binding.progressSensorsCo2.progress = (metrics.co2Ppm / 20).coerceIn(0, 100)
+        val coStr = String.format(Locale.US, "%.1f", metrics.co)
+        val ch2oStr = String.format(Locale.US, "%.2f", metrics.ch2o)
+        binding.tvSensorsCo2Val.text = "${metrics.co2} ppm (CO: $coStr ppm | CH₂O: $ch2oStr ppm)"
+        binding.progressSensorsCo2.progress = (metrics.co2 / 20).coerceIn(0, 100)
 
         binding.tvSensorsHumidityVal.text = "${metrics.humidityPercentage} %"
         binding.progressSensorsHumidity.progress = metrics.humidityPercentage.coerceIn(0, 100)
