@@ -72,6 +72,22 @@
     <string name="settings_about">Acerca de AirSense</string>
     <string name="settings_version">Versión 1.3.5 (Beta)</string>
 
+    <!-- Settings: Firebase IoT -->
+    <string name="settings_connection_title">Conexión Firebase (Nube)</string>
+    <string name="settings_connection_desc">Configura el enlace con Google Firebase Realtime Database para monitoreo en vivo</string>
+    <string name="settings_firebase_host_label">URL de Firebase Realtime Database</string>
+    <string name="settings_firebase_host_hint">https://tu-proyecto-default-rtdb.firebaseio.com</string>
+    <string name="settings_firebase_auth_label">Auth Token / Secret (Opcional)</string>
+    <string name="settings_firebase_auth_hint">Dejar vacío si las reglas son públicas</string>
+    <string name="btn_save_firebase_config">Guardar Parámetros</string>
+    <string name="btn_test_firebase_connection">Probar Conexión Firebase</string>
+    <string name="firebase_testing_connection">Probando conexión con Firebase&#8230;</string>
+    <string name="toast_firebase_saved">Configuración guardada correctamente</string>
+    <string name="firebase_test_success">¡Conexión exitosa a Firebase! Datos en vivo: AQI %1$d, Temp %2$.1f °C, CO2 %3$d ppm</string>
+    <string name="firebase_test_failed">Fallo de conexión a Firebase: %s</string>
+    <string name="status_source_firebase">Estación AirSense (Firebase ☁️)</string>
+    <string name="status_source_offline">Sin conexión con Firebase</string>
+
     <!-- Recommendations Screen -->
     <string name="recommendations_header_title">Recomendaciones de Salud</string>
     <string name="recommendations_header_subtitle">Consejos prácticos para mejorar la calidad del aire y mantener un ambiente óptimo en tu hogar.</string>

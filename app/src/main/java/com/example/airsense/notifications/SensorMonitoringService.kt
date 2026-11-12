@@ -72,7 +72,7 @@ class SensorMonitoringService : Service() {
         }
 
         createNotificationChannel()
-        startForeground(SERVICE_NOTIFICATION_ID, buildForegroundNotification("Inicializando monitoreo WiFi WeMos D1..."))
+        startForeground(SERVICE_NOTIFICATION_ID, buildForegroundNotification("Inicializando monitoreo Firebase..."))
 
         startMonitoring()
         return START_STICKY
@@ -95,13 +95,13 @@ class SensorMonitoringService : Service() {
                         }
                     }
                     is AirSenseState.Stale -> {
-                        updateForegroundNotification("Aviso: Estación WeMos D1 desconectada (192.168.4.1)...")
+                        updateForegroundNotification("Aviso: Sensor desconectado de Firebase...")
                     }
                     is AirSenseState.WarmingUp -> {
                         updateForegroundNotification("Sensor en precalentamiento (${state.remainingSeconds}s)")
                     }
                     is AirSenseState.Connecting -> {
-                        updateForegroundNotification("Conectando con estación WiFi AirSense_AP...")
+                        updateForegroundNotification("Conectando con Firebase Realtime Database...")
                     }
                 }
             }
@@ -118,7 +118,7 @@ class SensorMonitoringService : Service() {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_air_quality)
-            .setContentTitle("AirSense - Monitoreo WiFi Activo")
+            .setContentTitle("AirSense - Monitoreo Firebase")
             .setContentText(contentText)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

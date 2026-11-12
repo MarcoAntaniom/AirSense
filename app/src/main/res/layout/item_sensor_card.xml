@@ -3,67 +3,88 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="140dp"
+    android:layout_height="wrap_content"
     android:layout_margin="6dp"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@color/bg_card"
-    app:cardCornerRadius="24dp"
+    app:cardCornerRadius="20dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/stroke_card"
     app:strokeWidth="1dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Ícono del Sensor -->
-        <ImageView
-            android:id="@+id/ivSensorIcon"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:contentDescription="Icono sensor"
-            android:src="@drawable/ic_iot"
-            app:tint="@color/text_primary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <!-- Fila superior: Ícono y punto de estado -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <!-- Punto de estado (Verde = Online, Gris = Offline) sin texto -->
-        <View
-            android:id="@+id/viewStatusDot"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:background="@drawable/bg_status_dot"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <ImageView
+                android:id="@+id/ivSensorIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="Icono sensor"
+                android:src="@drawable/ic_iot"
+                app:tint="@color/text_primary" />
 
-        <!-- Valor Principal del Sensor -->
+            <View
+                android:id="@+id/viewStatusDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_status_dot" />
+        </RelativeLayout>
+
+        <!-- Valor Principal del Sensor con AutoSize para garantizar ajuste sin desborde -->
         <TextView
             android:id="@+id/tvSensorMainMetric"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="@color/text_primary"
-            android:textSize="28sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/tvSensorName"
-            app:layout_constraintStart_toStartOf="parent"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeMinTextSize="14sp"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
             tools:text="38 AQI" />
 
-        <!-- Nombre corto de la ubicación -->
+        <!-- Subtítulo / Tipo de medición -->
         <TextView
-            android:id="@+id/tvSensorName"
-            android:layout_width="0dp"
+            android:id="@+id/tvSensorType"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="Sala Principal" />
+            android:textSize="11sp"
+            tools:text="Índice General" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Nombre del Sensor con 2 líneas para alineación uniforme del grid -->
+        <TextView
+            android:id="@+id/tvSensorName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:minLines="2"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="Monóxido de Carbono" />
+
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

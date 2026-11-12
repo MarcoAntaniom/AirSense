@@ -147,11 +147,20 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/tv_sensors_gases_sub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="CO: 0.0 ppm · CH₂O: 0.00 ppm"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
                 <com.google.android.material.progressindicator.LinearProgressIndicator
                     android:id="@+id/progress_sensors_co2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:progress="35"
                     app:indicatorColor="@color/airsense_primary"
                     app:trackColor="@color/bg_card_subtle"

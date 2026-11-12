@@ -51,10 +51,10 @@ class HomeFragment : Fragment() {
                 }
                 launch {
                     sharedViewModel.isConnected.collect { isConnected ->
-                        if (!isConnected) {
-                            binding.tvLocation.text = "AirSense (Sin Conexión)"
+                        if (isConnected) {
+                            binding.tvLocation.text = getString(R.string.status_source_firebase)
                         } else {
-                            binding.tvLocation.text = "Estación WeMos D1 (WiFi)"
+                            binding.tvLocation.text = getString(R.string.status_source_offline)
                         }
                     }
                 }
@@ -77,7 +77,7 @@ class HomeFragment : Fragment() {
     private fun renderAirSenseState(state: AirSenseState) {
         when (state) {
             is AirSenseState.Connecting -> {
-                binding.chipAqiStatus.text = "Conectando WiFi..."
+                binding.chipAqiStatus.text = "Conectando..."
             }
             is AirSenseState.WarmingUp -> {
                 binding.chipAqiStatus.text = "Calentando..."
@@ -86,22 +86,23 @@ class HomeFragment : Fragment() {
                 updateModernUi(
                     aqi = state.metrics.aqi,
                     temp = state.metrics.temperatureCelsius,
-                    humidity = state.metrics.humidityPercentage,
-                    isOffline = state.isOffline
+                    humidity = state.metrics.humidityPercentage
                 )
             }
             is AirSenseState.Stale -> {
                 updateModernUi(
                     aqi = state.lastValidMetrics.aqi,
                     temp = state.lastValidMetrics.temperatureCelsius,
-                    humidity = state.lastValidMetrics.humidityPercentage,
-                    isOffline = true
+                    humidity = state.lastValidMetrics.humidityPercentage
                 )
+                val colorStale = ContextCompat.getColor(requireContext(), R.color.text_secondary)
+                binding.chipAqiStatus.text = "Desconectado"
+                binding.chipAqiStatus.setTextColor(colorStale)
             }
         }
     }
 
-    private fun updateModernUi(aqi: Int, temp: Double, humidity: Int, isOffline: Boolean = false) {
+    private fun updateModernUi(aqi: Int, temp: Double, humidity: Int) {
         currentTempCelsius = temp
 
         binding.aqiProgressIndicator.setProgressCompat(aqi, true)
@@ -111,11 +112,6 @@ class HomeFragment : Fragment() {
 
         val context = requireContext()
         when {
-            isOffline -> {
-                val colorStale = ContextCompat.getColor(context, R.color.text_secondary)
-                binding.chipAqiStatus.text = "Desconectado"
-                binding.chipAqiStatus.setTextColor(colorStale)
-            }
             aqi <= 50 -> {
                 val colorGood = ContextCompat.getColor(context, R.color.aqi_good)
                 val bgGood = ContextCompat.getColor(context, R.color.aqi_good_bg)

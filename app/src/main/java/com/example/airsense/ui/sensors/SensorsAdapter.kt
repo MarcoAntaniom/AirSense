@@ -34,6 +34,7 @@ class SensorsAdapter(
         val context = holder.itemView.context
 
         holder.binding.tvSensorName.text = sensor.name
+        holder.binding.tvSensorType.text = sensor.type
         holder.binding.tvSensorMainMetric.text = sensor.lastReading
 
         val statusColor = if (sensor.isOnline) {
@@ -44,9 +45,10 @@ class SensorsAdapter(
         holder.binding.viewStatusDot.backgroundTintList = ColorStateList.valueOf(statusColor)
 
         val iconRes = when {
-            sensor.type.contains("AQI", ignoreCase = true) -> R.drawable.ic_air_quality
-            sensor.type.contains("Temp", ignoreCase = true) -> R.drawable.ic_temp
-            sensor.type.contains("Humedad", ignoreCase = true) -> R.drawable.ic_humidity
+            sensor.name.contains("AQI", ignoreCase = true) || sensor.type.contains("AQI", ignoreCase = true) -> R.drawable.ic_air_quality
+            sensor.name.contains("Temp", ignoreCase = true) || sensor.type.contains("Temp", ignoreCase = true) -> R.drawable.ic_temp
+            sensor.name.contains("Humedad", ignoreCase = true) || sensor.type.contains("Humedad", ignoreCase = true) -> R.drawable.ic_humidity
+            sensor.name.contains("Carbono", ignoreCase = true) || sensor.name.contains("Formaldehído", ignoreCase = true) -> R.drawable.ic_sensors
             else -> R.drawable.ic_iot
         }
         holder.binding.ivSensorIcon.setImageResource(iconRes)

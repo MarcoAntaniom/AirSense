@@ -41,6 +41,12 @@ class UserPreferencesManager(private val context: Context) {
         val KEY_MIN_HUMIDITY = intPreferencesKey("threshold_min_humidity")
         val KEY_MAX_HUMIDITY = intPreferencesKey("threshold_max_humidity")
 
+        // Keys for Firebase
+        val KEY_FIREBASE_HOST = stringPreferencesKey("firebase_host")
+        val KEY_FIREBASE_AUTH = stringPreferencesKey("firebase_auth")
+
+        const val DEFAULT_FIREBASE_HOST = "https://airsense-c02fa-default-rtdb.firebaseio.com"
+
         fun formatTemperature(celsius: Double, useFahrenheit: Boolean): String {
             return if (useFahrenheit) {
                 val fahrenheit = (celsius * 1.8) + 32
@@ -99,6 +105,14 @@ class UserPreferencesManager(private val context: Context) {
         )
     }
 
+    val firebaseHostFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_FIREBASE_HOST] ?: DEFAULT_FIREBASE_HOST
+    }
+
+    val firebaseAuthFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_FIREBASE_AUTH] ?: ""
+    }
+
     suspend fun setFirstRunCompleted() {
         context.dataStore.edit { preferences ->
             preferences[KEY_IS_FIRST_RUN] = false
@@ -151,5 +165,12 @@ class UserPreferencesManager(private val context: Context) {
             preferences[KEY_MAX_HUMIDITY] = thresholds.maxHumidityPercentage
         }
         return true
+    }
+
+    suspend fun saveFirebaseConfig(host: String, auth: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_FIREBASE_HOST] = host.trim()
+            preferences[KEY_FIREBASE_AUTH] = auth.trim()
+        }
     }
 }

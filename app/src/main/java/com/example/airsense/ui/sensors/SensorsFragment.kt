@@ -117,7 +117,8 @@ class SensorsFragment : Fragment() {
 
         val coStr = String.format(Locale.US, "%.1f", metrics.co)
         val ch2oStr = String.format(Locale.US, "%.2f", metrics.ch2o)
-        binding.tvSensorsCo2Val.text = "${metrics.co2} ppm (CO: $coStr ppm | CH₂O: $ch2oStr ppm)"
+        binding.tvSensorsCo2Val.text = "${metrics.co2} ppm"
+        binding.tvSensorsGasesSub.text = "CO: $coStr ppm · CH₂O: $ch2oStr ppm"
         binding.progressSensorsCo2.progress = (metrics.co2 / 20).coerceIn(0, 100)
 
         binding.tvSensorsHumidityVal.text = "${metrics.humidityPercentage} %"

@@ -6,5 +6,7 @@ data class SensorDevice(
     val type: String,
     val batteryLevel: Int,
     val isOnline: Boolean,
-    val lastReading: String
+    val lastReading: String,
+    val referenceRange: String = "",
+    val description: String = ""
 )

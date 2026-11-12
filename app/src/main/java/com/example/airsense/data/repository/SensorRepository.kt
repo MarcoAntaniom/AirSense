@@ -5,7 +5,8 @@ import com.example.airsense.data.models.AirQualityLevel
 import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.AirQualityThresholds
 import com.example.airsense.data.models.AirSenseState
-import com.example.airsense.data.network.LocalSensorApiService
+import com.example.airsense.data.models.SensorConnectionSource
+import com.example.airsense.data.network.FirebaseSensorApiService
 import com.example.airsense.domain.HysteresisCalculator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -18,17 +19,21 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 
+/**
+ * Repositorio de telemetría conectado automáticamente a Google Firebase Realtime Database
+ * (https://airsense-c02fa-default-rtdb.firebaseio.com).
+ * Obtiene métricas en vivo en /airsense/actual.json e histórico en /airsense/historial.json
+ * transmitidos por el microcontrolador ESP8266 vía Internet.
+ */
 class SensorRepository(
-    private val context: Context? = null,
-    private val localSensorApiService: LocalSensorApiService? = null,
-    private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator(),
-    private val weatherRepository: WeatherRepository = WeatherRepository()
+    @Suppress("unused") private val context: Context? = null,
+    private val firebaseSensorApiService: FirebaseSensorApiService? = null,
+    private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator()
 ) {
     companion object {
-        const val TTL_MILLIS = 10_000L // Watchdog TTL = 10 segundos
-        const val MAX_NAN_ERRORS = 5    // Máximo de fallos seguidos antes de invalidar
-        const val POLLING_INTERVAL_MS = 2000L
+        const val POLLING_INTERVAL_MS = 2500L
     }
 
     private val _currentMetrics = MutableStateFlow<AirQualityMetrics?>(null)
@@ -37,50 +42,59 @@ class SensorRepository(
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
+    private val _connectionSource = MutableStateFlow(SensorConnectionSource.NONE)
+    val connectionSource: StateFlow<SensorConnectionSource> = _connectionSource.asStateFlow()
+
     private var lastValidMetrics: AirQualityMetrics? = null
-    private var lastValidTimestamp: Long = 0L
-    private var consecutiveErrors: Int = 0
     private var previousLevel: AirQualityLevel? = null
 
-    private fun getApiService(): LocalSensorApiService {
-        return localSensorApiService ?: LocalSensorApiService.create(context)
+    private fun getFirebaseApiService(): FirebaseSensorApiService {
+        return firebaseSensorApiService ?: FirebaseSensorApiService.create()
     }
 
     /**
-     * Realiza un polling periódico en Dispatchers.IO cada 2000 ms a http://192.168.4.1/data.
-     * Si la petición es exitosa, emite las métricas y marca isConnected = true.
-     * Si lanza excepción (timeout o red no disponible), emite null y marca isConnected = false.
+     * Realiza un polling periódico cada 2500 ms directamente a Google Firebase Realtime Database.
+     * Si la petición a /airsense/actual.json es exitosa, emite las métricas y marca isConnected = true.
+     * Si falla o no hay internet, emite null y marca isConnected = false.
      */
     fun pollTelemetryStream(): Flow<AirQualityMetrics?> = flow {
         while (currentCoroutineContext().isActive) {
+            var metrics: AirQualityMetrics? = null
+
             try {
-                val api = getApiService()
-                val response = api.getSensorData()
-                val metrics = response.toAirQualityMetrics()
+                val fbApi = getFirebaseApiService()
+                val response = fbApi.getLiveMetrics()
+                if (response != null) {
+                    metrics = response.toAirQualityMetrics()
+                }
+            } catch (_: Exception) {
+                // Sin conexión a Firebase
+            }
+
+            if (metrics != null) {
                 _isConnected.value = true
+                _connectionSource.value = SensorConnectionSource.FIREBASE_CLOUD
                 _currentMetrics.value = metrics
                 emit(metrics)
-            } catch (_: Exception) {
+            } else {
                 _isConnected.value = false
+                _connectionSource.value = SensorConnectionSource.NONE
                 emit(null)
             }
+
             delay(POLLING_INTERVAL_MS)
         }
     }.flowOn(Dispatchers.IO)
 
     /**
-     * Inicia la recolección de datos mediante polling y emite el estado unificado de la aplicación (AirSenseState),
-     * gestionando el Watchdog TTL (10s) y la banda de histéresis basada en normativas chilenas.
+     * Observa el flujo de telemetría de Firebase y calcula el estado reactivo AirSenseState.
      */
     fun observeSensorState(thresholdsFlow: Flow<AirQualityThresholds>): Flow<AirSenseState> {
         return combine(
             pollTelemetryStream(),
             thresholdsFlow
         ) { metrics, thresholds ->
-            val now = System.currentTimeMillis()
-
             if (metrics != null && metrics.isValidDht11Reading()) {
-                consecutiveErrors = 0
                 val newLevel = hysteresisCalculator.calculateMetricsLevel(
                     metrics = metrics,
                     thresholds = thresholds,
@@ -90,36 +104,57 @@ class SensorRepository(
 
                 val metricsWithStatus = metrics.copy(aqiStatus = newLevel.label)
                 lastValidMetrics = metricsWithStatus
-                lastValidTimestamp = now
 
                 AirSenseState.ActiveValid(
                     metrics = metricsWithStatus,
-                    level = newLevel,
-                    isOffline = false
+                    level = newLevel
                 )
             } else {
-                consecutiveErrors++
-                val timeSinceLastValid = now - lastValidTimestamp
-                val cached = lastValidMetrics
-
-                if (cached != null && consecutiveErrors < MAX_NAN_ERRORS && timeSinceLastValid <= TTL_MILLIS) {
-                    AirSenseState.ActiveValid(
-                        metrics = cached,
-                        level = previousLevel ?: AirQualityLevel.EXCELLENT,
-                        isOffline = true
-                    )
-                } else {
-                    val fallback = cached ?: AirQualityMetrics(lastUpdated = "Sin señal")
-                    AirSenseState.Stale(
-                        lastValidMetrics = fallback,
-                        reason = "Sensor WeMos D1 desconectado o sin respuesta HTTP (192.168.4.1)"
-                    )
-                }
+                val fallback = lastValidMetrics ?: AirQualityMetrics(lastUpdated = "Sin señal")
+                AirSenseState.Stale(
+                    lastValidMetrics = fallback,
+                    reason = "Sin conexión con Firebase Realtime Database"
+                )
             }
         }
     }
 
-    suspend fun getFallbackMetricsFromApi(): Result<AirQualityMetrics> {
-        return weatherRepository.fetchRealtimeMetrics()
+    suspend fun testFirebaseDirectly(rawHostUrl: String? = null): Result<AirQualityMetrics> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val api = firebaseSensorApiService ?: if (rawHostUrl != null) {
+                    FirebaseSensorApiService.create(rawHostUrl)
+                } else {
+                    getFirebaseApiService()
+                }
+                val response = api.getLiveMetrics()
+                if (response != null) {
+                    Result.success(response.toAirQualityMetrics())
+                } else {
+                    Result.failure(Exception("La base de datos respondió, pero '/airsense/actual.json' no contiene datos aún."))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun fetchHistoryFromFirebase(limit: Int = 30): Result<List<AirQualityMetrics>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val api = getFirebaseApiService()
+                val map = api.getHistory(limitToLast = limit)
+                if (map.isNullOrEmpty()) {
+                    Result.success(emptyList())
+                } else {
+                    val list = map.values
+                        .map { it.toAirQualityMetrics() }
+                        .sortedBy { it.timestamp }
+                    Result.success(list)
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
     }
 }

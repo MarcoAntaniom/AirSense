@@ -9,7 +9,7 @@ enum class AirQualityLevel(val label: String) {
 }
 
 /**
- * Máquina de estados finita de la interfaz de usuario en AirSense v1.1.1.
+ * Máquina de estados finita de la interfaz de usuario en AirSense.
  */
 sealed class AirSenseState {
     object Connecting : AirSenseState()
@@ -18,8 +18,7 @@ sealed class AirSenseState {
 
     data class ActiveValid(
         val metrics: AirQualityMetrics,
-        val level: AirQualityLevel,
-        val isOffline: Boolean = false
+        val level: AirQualityLevel
     ) : AirSenseState()
 
     data class Stale(

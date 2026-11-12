@@ -93,59 +93,73 @@ class SensorsRepository {
         val list = listOf(
             SensorDevice(
                 id = "sns_01",
-                name = "Estación Clima (WeMos D1)",
-                type = "AQI + Temp",
-                batteryLevel = 95,
+                name = "Calidad del Aire (AQI)",
+                type = "Índice General",
+                batteryLevel = 98,
                 isOnline = isOnline,
-                lastReading = "${sanitized.aqi} AQI"
+                lastReading = "${sanitized.aqi} AQI",
+                referenceRange = "0 - 50 (Excelente) · EPA",
+                description = "Índice ponderado en tiempo real según normativas ambientales. Evalúa la calidad global del aire que respiras."
             ),
             SensorDevice(
                 id = "sns_02",
-                name = "Sensor Monóxido de Carbono (CO)",
-                type = "Gas CO (LPP 40 ppm)",
-                batteryLevel = 90,
+                name = "Monóxido de Carbono",
+                type = "Gas CO · Combustión",
+                batteryLevel = 94,
                 isOnline = isOnline,
-                lastReading = coStr
+                lastReading = coStr,
+                referenceRange = "< 40 ppm (DS 594 Chile)",
+                description = "Gas incoloro e inodoro emitido por mala combustión en calefactores o estufas. El límite ponderado seguro es 40 ppm."
             ),
             SensorDevice(
                 id = "sns_03",
-                name = "Sensor Formaldehído (CH₂O)",
-                type = "Gas CH₂O (LPA 0.3 ppm)",
-                batteryLevel = 88,
+                name = "Formaldehído (CH₂O)",
+                type = "Compuesto Volátil (COV)",
+                batteryLevel = 92,
                 isOnline = isOnline,
-                lastReading = ch2oStr
+                lastReading = ch2oStr,
+                referenceRange = "< 0.30 ppm (LPA DS 594)",
+                description = "Vapor químico desprendido por barnices, resinas, muebles aglomerados y pegamentos. Límite máximo 0.3 ppm."
             ),
             SensorDevice(
                 id = "sns_04",
-                name = "Sensor CO₂ / Ventilación",
-                type = "Dióxido de Carbono",
-                batteryLevel = 92,
+                name = "Dióxido de Carbono (CO₂)",
+                type = "Ventilación Interior",
+                batteryLevel = 96,
                 isOnline = isOnline,
-                lastReading = "${sanitized.co2} ppm"
+                lastReading = "${sanitized.co2} ppm",
+                referenceRange = "< 700 ppm (Óptimo) · ASHRAE",
+                description = "Indicador directo de ventilación y oxígeno ambiental. Concentraciones > 1000 ppm generan somnolencia y fatiga."
             ),
             SensorDevice(
                 id = "sns_05",
-                name = "Sensor Temperatura (TGBH)",
-                type = "DHT11 (Max 26.7 °C)",
-                batteryLevel = 85,
+                name = "Temperatura Ambiente",
+                type = "Sensor DHT11",
+                batteryLevel = 90,
                 isOnline = isOnline,
-                lastReading = tempStr
+                lastReading = tempStr,
+                referenceRange = "18.0 °C - 24.0 °C (Confort)",
+                description = "Temperatura interior para evitar estrés térmico o irritaciones respiratorias. Rango ideal entre 18 y 24 °C."
             ),
             SensorDevice(
                 id = "sns_06",
-                name = "Sensor Humedad Relativa",
-                type = "Humedad DHT11",
-                batteryLevel = 82,
+                name = "Humedad Relativa",
+                type = "Sensor DHT11",
+                batteryLevel = 88,
                 isOnline = isOnline,
-                lastReading = "${sanitized.humidity.toInt()}%"
+                lastReading = "${sanitized.humidity.toInt()}%",
+                referenceRange = "30% - 60% HR (Saludable)",
+                description = "Humedad relativa en el ambiente. Menor al 30% reseca mucosas; sobre el 60% fomenta la aparición de ácaros y moho."
             ),
             SensorDevice(
                 id = "sns_07",
-                name = "Calidad Exterior (PM2.5 / PM10)",
-                type = "Norma MMA Chile",
+                name = "Material Particulado",
+                type = "Partículas Finas PM2.5",
                 batteryLevel = 99,
                 isOnline = isOnline,
-                lastReading = "PM2.5: $pm25Str | PM10: $pm10Str | SO2: $so2Str"
+                lastReading = pm25Str,
+                referenceRange = "< 25.0 µg/m³ · MMA Chile",
+                description = "Partículas finas microscópicas capaces de ingresar al sistema respiratorio profundo. PM10: $pm10Str | SO2: $so2Str"
             )
         )
         setSensors(list)

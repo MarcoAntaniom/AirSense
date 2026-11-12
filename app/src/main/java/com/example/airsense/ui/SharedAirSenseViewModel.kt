@@ -7,6 +7,7 @@ import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.AirQualityThresholds
 import com.example.airsense.data.models.AirSenseState
+import com.example.airsense.data.models.SensorConnectionSource
 import com.example.airsense.data.models.SensorDevice
 import com.example.airsense.data.repository.SensorRepository
 import com.example.airsense.data.repository.SensorsRepository
@@ -34,6 +35,7 @@ class SharedAirSenseViewModel(
     val airQualityMetrics: StateFlow<AirQualityMetrics?> = _airQualityMetrics.asStateFlow()
 
     val isConnected: StateFlow<Boolean> = sensorRepository.isConnected
+    val connectionSource: StateFlow<SensorConnectionSource> = sensorRepository.connectionSource
 
     val sensors: StateFlow<List<SensorDevice>> = sensorsRepository.sensors
         .stateIn(
@@ -47,6 +49,20 @@ class SharedAirSenseViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = AirQualityThresholds()
+        )
+
+    val firebaseHost: StateFlow<String> = userPrefs.firebaseHostFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = UserPreferencesManager.DEFAULT_FIREBASE_HOST
+        )
+
+    val firebaseAuth: StateFlow<String> = userPrefs.firebaseAuthFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
         )
 
     val airSenseState: StateFlow<AirSenseState> = sensorRepository
@@ -64,7 +80,7 @@ class SharedAirSenseViewModel(
                     is AirSenseState.ActiveValid -> {
                         val sanitizedMetrics = sensorsRepository.sanitizeMetrics(state.metrics)
                         _airQualityMetrics.value = sanitizedMetrics
-                        sensorsRepository.generateSensorsFromMetrics(sanitizedMetrics, isOnline = !state.isOffline)
+                        sensorsRepository.generateSensorsFromMetrics(sanitizedMetrics, isOnline = true)
                     }
                     is AirSenseState.Stale -> {
                         val sanitizedMetrics = sensorsRepository.sanitizeMetrics(state.lastValidMetrics)
@@ -92,6 +108,14 @@ class SharedAirSenseViewModel(
             val saved = userPrefs.saveThresholds(newThresholds)
             onResult(saved)
         }
+    }
+
+    suspend fun testFirebaseConnection(host: String? = null): Result<AirQualityMetrics> {
+        return sensorRepository.testFirebaseDirectly(host)
+    }
+
+    suspend fun fetchHistory(limit: Int = 30): Result<List<AirQualityMetrics>> {
+        return sensorRepository.fetchHistoryFromFirebase(limit)
     }
 
     fun fetchRealtimeWeather(latitude: Double = -33.45, longitude: Double = -70.66) {
