@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
  * emitido por el microcontrolador ESP8266 vía Internet.
  */
 data class FirebaseSensorResponse(
-    @SerializedName("temperature") val temperature: Float = 0f,
-    @SerializedName("humidity") val humidity: Float = 0f,
+    @SerializedName("temperature", alternate = ["temperatura", "temp"]) val temperature: Float = 0f,
+    @SerializedName("humidity", alternate = ["humedad", "hum"]) val humidity: Float = 0f,
     @SerializedName("gasRaw") val gasRaw: Int = 0,
     @SerializedName("co") val co: Float = 0f,
     @SerializedName("ch2o") val ch2o: Float = 0f,

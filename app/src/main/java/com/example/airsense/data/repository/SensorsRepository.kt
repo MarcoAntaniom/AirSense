@@ -1,5 +1,6 @@
 package com.example.airsense.data.repository
 
+import com.example.airsense.data.UserPreferencesManager
 import com.example.airsense.data.models.AirQualityMetrics
 import com.example.airsense.data.models.SensorDevice
 import kotlinx.coroutines.flow.Flow
@@ -81,9 +82,16 @@ class SensorsRepository {
     /**
      * Genera la lista estandarizada de dispositivos a partir de las métricas recibidas de la placa WeMos D1.
      */
-    fun generateSensorsFromMetrics(metrics: AirQualityMetrics, isOnline: Boolean): List<SensorDevice> {
+    fun generateSensorsFromMetrics(
+        metrics: AirQualityMetrics,
+        isOnline: Boolean,
+        useFahrenheit: Boolean = false
+    ): List<SensorDevice> {
         val sanitized = sanitizeMetrics(metrics)
-        val tempStr = String.format(Locale.US, "%.1f °C", sanitized.temperature)
+        val tempStr = UserPreferencesManager.formatTemperature(
+            sanitized.temperature.toDouble(),
+            useFahrenheit
+        )
         val coStr = String.format(Locale.US, "%.1f ppm", sanitized.co)
         val ch2oStr = String.format(Locale.US, "%.2f ppm", sanitized.ch2o)
         val pm25Str = String.format(Locale.US, "%.1f µg/m³", sanitized.pm25)

@@ -468,7 +468,8 @@
             <!-- Tarjeta Temperatura -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="148dp"
+                android:layout_height="wrap_content"
+                android:minHeight="148dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 app:cardBackgroundColor="@color/bg_card"
@@ -532,7 +533,8 @@
             <!-- Tarjeta Humedad -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="148dp"
+                android:layout_height="wrap_content"
+                android:minHeight="148dp"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 app:cardBackgroundColor="@color/bg_card"

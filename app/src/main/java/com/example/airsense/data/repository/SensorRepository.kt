@@ -9,8 +9,8 @@ import com.example.airsense.data.models.SensorConnectionSource
 import com.example.airsense.data.network.FirebaseSensorApiService
 import com.example.airsense.domain.HysteresisCalculator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,8 +20,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 import com.example.airsense.data.UserPreferencesManager
+import com.example.airsense.data.auth.AuthRepository
 import kotlinx.coroutines.flow.firstOrNull
 import retrofit2.HttpException
 import java.net.UnknownHostException
@@ -35,7 +37,8 @@ import java.net.UnknownHostException
 class SensorRepository(
     context: Context? = null,
     private val firebaseSensorApiService: FirebaseSensorApiService? = null,
-    private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator()
+    private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator(),
+    private val authRepository: AuthRepository = AuthRepository()
 ) {
     companion object {
         const val POLLING_INTERVAL_MS = 2500L
@@ -55,9 +58,22 @@ class SensorRepository(
 
     private var lastValidMetrics: AirQualityMetrics? = null
     private var previousLevel: AirQualityLevel? = null
+    private val defaultFirebaseApiService: FirebaseSensorApiService by lazy {
+        FirebaseSensorApiService.create()
+    }
+    private val refreshTrigger = Channel<Unit>(Channel.CONFLATED)
 
     private fun getFirebaseApiService(): FirebaseSensorApiService {
-        return firebaseSensorApiService ?: FirebaseSensorApiService.create()
+        return firebaseSensorApiService ?: defaultFirebaseApiService
+    }
+
+    fun requestImmediateRefresh() {
+        refreshTrigger.trySend(Unit)
+    }
+
+    private suspend fun resolveAuthToken(): String? {
+        val prefToken = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
+        return prefToken ?: authRepository.getValidIdToken()
     }
 
     /**
@@ -70,15 +86,24 @@ class SensorRepository(
             var metrics: AirQualityMetrics? = null
 
             try {
-                val authPref = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()
                 val hostPref = userPrefs?.firebaseHostFlow?.firstOrNull()?.trim()
-                val api = firebaseSensorApiService ?: if (!hostPref.isNullOrEmpty() && hostPref != FirebaseSensorApiService.FIREBASE_HOST_URL) {
+                val defaultHost = FirebaseSensorApiService.FIREBASE_HOST_URL.trimEnd('/')
+                val api = firebaseSensorApiService ?: if (!hostPref.isNullOrEmpty() && hostPref.trimEnd('/') != defaultHost) {
                     FirebaseSensorApiService.create(hostPref)
                 } else {
                     getFirebaseApiService()
                 }
 
-                val response = api.getLiveMetrics(auth = authPref?.takeIf { it.isNotBlank() })
+                val token = resolveAuthToken()
+                val response = try {
+                    api.getLiveMetrics(auth = token)
+                } catch (authError: HttpException) {
+                    if (authError.code() == 401 && token != null) {
+                        api.getLiveMetrics(auth = null)
+                    } else {
+                        throw authError
+                    }
+                }
                 if (response != null) {
                     metrics = response.toAirQualityMetrics()
                     lastErrorReason = null
@@ -108,7 +133,9 @@ class SensorRepository(
                 emit(null)
             }
 
-            delay(POLLING_INTERVAL_MS)
+            withTimeoutOrNull(POLLING_INTERVAL_MS) {
+                refreshTrigger.receive()
+            }
         }
     }.flowOn(Dispatchers.IO)
 
@@ -153,8 +180,8 @@ class SensorRepository(
                 } else {
                     getFirebaseApiService()
                 }
-                val authPref = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()
-                val response = api.getLiveMetrics(auth = authPref?.takeIf { it.isNotBlank() })
+                val token = resolveAuthToken()
+                val response = api.getLiveMetrics(auth = token)
                 if (response != null) {
                     Result.success(response.toAirQualityMetrics())
                 } else {
@@ -170,8 +197,8 @@ class SensorRepository(
         return withContext(Dispatchers.IO) {
             try {
                 val api = getFirebaseApiService()
-                val authPref = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()
-                val map = api.getHistory(auth = authPref?.takeIf { it.isNotBlank() }, limitToLast = limit)
+                val token = resolveAuthToken()
+                val map = api.getHistory(auth = token, limitToLast = limit)
                 if (map.isNullOrEmpty()) {
                     Result.success(emptyList())
                 } else {

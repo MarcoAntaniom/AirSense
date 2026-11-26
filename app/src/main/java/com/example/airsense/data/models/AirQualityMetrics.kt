@@ -75,7 +75,8 @@ data class AirQualityMetrics(
      * físicos de la hoja de datos oficial del sensor DHT11 (0°C a 50°C, 20% a 90% HR).
      */
     fun isValidDht11Reading(): Boolean {
-        return temperature in 0.0f..50.0f && humidity in 20.0f..90.0f
+        return !temperature.isNaN() && !humidity.isNaN() &&
+            temperature in -10.0f..80.0f && humidity in 0.0f..100.0f
     }
 
     /**

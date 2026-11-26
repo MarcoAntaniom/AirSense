@@ -295,6 +295,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tv_sensors_temp_sub"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
@@ -375,6 +376,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tv_sensors_humidity_sub"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"

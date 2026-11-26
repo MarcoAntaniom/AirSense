@@ -66,7 +66,7 @@ class HomeFragment : Fragment() {
 
     private fun setupListeners() {
         binding.btnRefresh.setOnClickListener {
-            sharedViewModel.fetchRealtimeWeather()
+            sharedViewModel.refreshTelemetry()
         }
         binding.cardQuickRecommendation.setOnClickListener {
             try {
@@ -140,6 +140,7 @@ class HomeFragment : Fragment() {
         binding.tvAqiValue.text = "--"
         binding.chipAqiStatus.text = aqiStatusText
         binding.aqiProgressIndicator.setProgressCompat(0, false)
+        binding.tvLastUpdated.text = "Sin señal"
 
         binding.tvTempValue.text = "--"
         binding.tvHumidityValue.text = "--"
@@ -240,6 +241,7 @@ class HomeFragment : Fragment() {
         }
 
         // 3. TARJETAS BENTO: TEMPERATURA Y HUMEDAD
+        binding.tvLastUpdated.text = metrics.lastUpdated
         updateTemperatureDisplay(isFahrenheit)
         binding.tvHumidityValue.text = "${metrics.humidityPercentage}%"
 

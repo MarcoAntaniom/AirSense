@@ -17,12 +17,16 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.example.airsense.R
 import com.example.airsense.data.UserPreferencesManager
+import com.example.airsense.data.auth.AuthRepository
 import com.example.airsense.databinding.FragmentSettingsBinding
 import com.example.airsense.notifications.NotificationHelper
 import com.example.airsense.ui.SharedAirSenseViewModel
 import com.example.airsense.utils.PermissionHelper
+import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -31,6 +35,7 @@ class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
     private val sharedViewModel: SharedAirSenseViewModel by activityViewModels()
+    private val authRepository = AuthRepository()
     private lateinit var userPrefs: UserPreferencesManager
 
     private val requestNotificationPermissionLauncher = registerForActivityResult(
@@ -78,11 +83,17 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupAccountSection()
         setupTestNotificationButton()
         setupSystemPermissionsSection()
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    authRepository.authStateFlow.collect { user ->
+                        updateAccountUi(user)
+                    }
+                }
                 launch {
                     sharedViewModel.thresholds.collect { _ ->
                         // Umbrales sincronizados
@@ -131,6 +142,51 @@ class SettingsFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         updatePermissionStatuses()
+    }
+
+    private fun setupAccountSection() {
+        updateAccountUi(authRepository.currentUser)
+
+        binding.btnSignOut.setOnClickListener {
+            binding.btnSignOut.isEnabled = false
+            viewLifecycleOwner.lifecycleScope.launch {
+                runCatching {
+                    authRepository.signOut(requireActivity())
+                }.onFailure { error ->
+                    if (error is CancellationException) throw error
+                }
+                if (isAdded) {
+                    findNavController().navigate(R.id.action_global_to_loginFragment)
+                }
+            }
+        }
+    }
+
+    private fun updateAccountUi(user: FirebaseUser?) {
+        val currentBinding = _binding ?: return
+        if (user != null) {
+            currentBinding.tvAccountName.text = user.displayName
+                ?.takeIf { it.isNotBlank() }
+                ?: "Usuario AirSense"
+            currentBinding.tvAccountEmail.text = user.email
+                ?.takeIf { it.isNotBlank() }
+                ?: "Sin cuenta vinculada"
+            currentBinding.btnSignOut.text = "Cerrar sesión"
+            context?.let { ctx ->
+                currentBinding.btnSignOut.setTextColor(
+                    ContextCompat.getColor(ctx, R.color.status_danger)
+                )
+            }
+        } else {
+            currentBinding.tvAccountName.text = "Sesión no iniciada"
+            currentBinding.tvAccountEmail.text = "Sin cuenta vinculada"
+            currentBinding.btnSignOut.text = "Iniciar sesión"
+            context?.let { ctx ->
+                currentBinding.btnSignOut.setTextColor(
+                    ContextCompat.getColor(ctx, R.color.airsense_secondary)
+                )
+            }
+        }
     }
 
     private fun setupTestNotificationButton() {

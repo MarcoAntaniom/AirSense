@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -75,22 +76,39 @@ class SharedAirSenseViewModel(
 
     init {
         viewModelScope.launch {
-            airSenseState.collect { state ->
+            combine(
+                airSenseState,
+                userPrefs.useFahrenheitFlow
+            ) { state, useFahrenheit ->
+                state to useFahrenheit
+            }.collect { (state, useFahrenheit) ->
                 when (state) {
                     is AirSenseState.ActiveValid -> {
                         val sanitizedMetrics = sensorsRepository.sanitizeMetrics(state.metrics)
                         _airQualityMetrics.value = sanitizedMetrics
-                        sensorsRepository.generateSensorsFromMetrics(sanitizedMetrics, isOnline = true)
+                        sensorsRepository.generateSensorsFromMetrics(
+                            sanitizedMetrics,
+                            isOnline = true,
+                            useFahrenheit = useFahrenheit
+                        )
                     }
                     is AirSenseState.Stale -> {
                         val sanitizedMetrics = sensorsRepository.sanitizeMetrics(state.lastValidMetrics)
                         _airQualityMetrics.value = sanitizedMetrics
-                        sensorsRepository.generateSensorsFromMetrics(sanitizedMetrics, isOnline = false)
+                        sensorsRepository.generateSensorsFromMetrics(
+                            sanitizedMetrics,
+                            isOnline = false,
+                            useFahrenheit = useFahrenheit
+                        )
                     }
                     else -> {}
                 }
             }
         }
+    }
+
+    fun refreshTelemetry() {
+        sensorRepository.requestImmediateRefresh()
     }
 
     fun updateMetrics(metrics: AirQualityMetrics) {

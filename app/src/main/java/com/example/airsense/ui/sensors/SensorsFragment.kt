@@ -30,6 +30,8 @@ class SensorsFragment : Fragment() {
     private lateinit var userPrefs: UserPreferencesManager
     private lateinit var sensorsAdapter: SensorsAdapter
     private var currentTempCelsius: Double = 22.4
+    private var isFahrenheit: Boolean = false
+    private var isCurrentlyConnected: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,7 +53,7 @@ class SensorsFragment : Fragment() {
             R.color.airsense_secondary
         )
         binding.swipeRefreshLayout.setOnRefreshListener {
-            sharedViewModel.fetchRealtimeWeather()
+            sharedViewModel.refreshTelemetry()
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -70,7 +72,10 @@ class SensorsFragment : Fragment() {
                 }
                 launch {
                     userPrefs.useFahrenheitFlow.collect { useFahrenheit ->
-                        updateTemperatureDisplay(useFahrenheit)
+                        isFahrenheit = useFahrenheit
+                        if (isCurrentlyConnected) {
+                            updateTemperatureDisplay(useFahrenheit)
+                        }
                     }
                 }
             }
@@ -98,15 +103,31 @@ class SensorsFragment : Fragment() {
 
         when (state) {
             is AirSenseState.ActiveValid -> {
+                isCurrentlyConnected = true
                 updateSensorsUi(state.metrics)
             }
-            is AirSenseState.Stale -> {
-                updateSensorsUi(state.lastValidMetrics)
-            }
-            is AirSenseState.WarmingUp, is AirSenseState.Connecting -> {
-                // Estado de espera o carga
+            is AirSenseState.Stale, is AirSenseState.WarmingUp, is AirSenseState.Connecting -> {
+                isCurrentlyConnected = false
+                maskSensorsUi()
             }
         }
+    }
+
+    private fun maskSensorsUi() {
+        binding.tvSensorsAqiVal.text = "--"
+        binding.progressSensorsAqi.progress = 0
+
+        binding.tvSensorsCo2Val.text = "--"
+        binding.tvSensorsGasesSub.text = "Sin telemetría activa"
+        binding.progressSensorsCo2.progress = 0
+
+        binding.tvSensorsTempVal.text = "--"
+        binding.tvSensorsTempSub.text = "DHT11 · No disponible"
+        binding.progressSensorsTemp.progress = 0
+
+        binding.tvSensorsHumidityVal.text = "--"
+        binding.tvSensorsHumiditySub.text = "DHT11 · No disponible"
+        binding.progressSensorsHumidity.progress = 0
     }
 
     private fun updateSensorsUi(metrics: AirQualityMetrics) {
@@ -121,10 +142,21 @@ class SensorsFragment : Fragment() {
         binding.tvSensorsGasesSub.text = "CO: $coStr ppm · CH₂O: $ch2oStr ppm"
         binding.progressSensorsCo2.progress = (metrics.co2 / 20).coerceIn(0, 100)
 
-        binding.tvSensorsHumidityVal.text = "${metrics.humidityPercentage} %"
-        binding.progressSensorsHumidity.progress = metrics.humidityPercentage.coerceIn(0, 100)
-
+        updateTemperatureDisplay(isFahrenheit)
+        binding.tvSensorsTempSub.text = when {
+            metrics.temperature < 18f -> "DHT11 · Frío en cocina"
+            metrics.temperature in 18f..26f -> "DHT11 · Confortable"
+            else -> "DHT11 · Calor elevado"
+        }
         binding.progressSensorsTemp.progress = (metrics.temperatureCelsius * 2).toInt().coerceIn(0, 100)
+
+        binding.tvSensorsHumidityVal.text = "${metrics.humidityPercentage} %"
+        binding.tvSensorsHumiditySub.text = when {
+            metrics.humidity < 35f -> "DHT11 · Seco"
+            metrics.humidity in 35f..65f -> "DHT11 · Humedad ideal"
+            else -> "DHT11 · Humedad alta"
+        }
+        binding.progressSensorsHumidity.progress = metrics.humidityPercentage.coerceIn(0, 100)
     }
 
     private fun updateTemperatureDisplay(useFahrenheit: Boolean) {
