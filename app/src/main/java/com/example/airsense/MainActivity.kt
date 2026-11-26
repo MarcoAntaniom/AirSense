@@ -60,6 +60,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        // Escuchar el estado de conexión para el pill indicador en Toolbar
+        lifecycleScope.launch {
+            sharedViewModel.isConnected.collect { connected ->
+                binding.tvToolbarLive.text = if (connected) "EN VIVO" else "OFFLINE"
+                val dotColor = androidx.core.content.ContextCompat.getColor(
+                    this@MainActivity,
+                    if (connected) R.color.aqi_good else R.color.text_secondary
+                )
+                binding.dotLive.backgroundTintList = android.content.res.ColorStateList.valueOf(dotColor)
+            }
+        }
 
         // Solicitar permisos del sistema
         checkAndRequestPermissions()
@@ -121,15 +134,17 @@ class MainActivity : AppCompatActivity() {
      * Actualiza el título del Toolbar según la sección seleccionada.
      */
     private fun updateToolbarTitle(destinationId: Int) {
-        when (destinationId) {
-            R.id.navigation_home -> supportActionBar?.setTitle(R.string.title_home)
-            R.id.navigation_sensors -> supportActionBar?.setTitle(R.string.title_sensors)
-            R.id.navigation_recommendations -> supportActionBar?.setTitle(R.string.title_recommendations)
-            R.id.navigation_settings -> supportActionBar?.setTitle(R.string.title_settings)
-            R.id.sensorDetailFragment -> supportActionBar?.title = "Detalle del Sensor"
-            R.id.onboardingFragment -> supportActionBar?.title = "Bienvenido"
-            else -> supportActionBar?.setTitle(R.string.title_home)
+        val title = when (destinationId) {
+            R.id.navigation_home -> "AirSense"
+            R.id.navigation_sensors -> getString(R.string.title_sensors)
+            R.id.navigation_recommendations -> getString(R.string.title_recommendations)
+            R.id.navigation_settings -> getString(R.string.title_settings)
+            R.id.sensorDetailFragment -> "Detalle"
+            R.id.onboardingFragment -> "Bienvenido"
+            else -> "AirSense"
         }
+        binding.toolbarTitle.text = title
+        supportActionBar?.title = ""
     }
 
     override fun onSupportNavigateUp(): Boolean {

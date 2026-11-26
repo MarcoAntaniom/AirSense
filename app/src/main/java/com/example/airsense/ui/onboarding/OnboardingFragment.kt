@@ -34,18 +34,18 @@ class OnboardingFragment : Fragment() {
         val slides = listOf(
             OnboardingSlide(
                 R.drawable.app_logo,
-                "Bienvenido a AirSense",
-                "Monitorea la calidad del aire, temperatura y humedad en tiempo real con sensores inteligentes."
+                "Monitoreo en Cocinas Profesionales",
+                "Supervisa en tiempo real los niveles de gas de combustión (CO₂, CO, CH₂O) y calidad de aire en tu área culinaria."
             ),
             OnboardingSlide(
                 R.drawable.ic_air_quality,
-                "Alertas & Confort Ambiental",
-                "Recibe notificaciones inmediatas ante variaciones de CO2, partículas PM2.5 y humedad extrema."
+                "Prioridad Operacional & Seguridad",
+                "Distingue al instante estados Óptimo, Moderado o Peligroso para gestionar la extracción y proteger al equipo de trabajo."
             ),
             OnboardingSlide(
                 R.drawable.ic_iot,
-                "Conexión IoT Sencilla",
-                "Escaneará y vinculará tus sensores ambientales usando Bluetooth y ubicación de forma segura."
+                "Telemetría Confiable en Vivo",
+                "Conexión persistente con sensores IoT y Firebase. Lecturas confirmadas en tiempo real sin falsos positivos."
             )
         )
 

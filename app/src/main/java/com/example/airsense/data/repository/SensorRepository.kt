@@ -21,6 +21,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 
+import com.example.airsense.data.UserPreferencesManager
+import kotlinx.coroutines.flow.firstOrNull
+import retrofit2.HttpException
+import java.net.UnknownHostException
+
 /**
  * Repositorio de telemetría conectado automáticamente a Google Firebase Realtime Database
  * (https://airsense-c02fa-default-rtdb.firebaseio.com).
@@ -28,13 +33,16 @@ import kotlinx.coroutines.withContext
  * transmitidos por el microcontrolador ESP8266 vía Internet.
  */
 class SensorRepository(
-    @Suppress("unused") private val context: Context? = null,
+    context: Context? = null,
     private val firebaseSensorApiService: FirebaseSensorApiService? = null,
     private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator()
 ) {
     companion object {
         const val POLLING_INTERVAL_MS = 2500L
     }
+
+    private val userPrefs = context?.let { UserPreferencesManager(it) }
+    private var lastErrorReason: String? = null
 
     private val _currentMetrics = MutableStateFlow<AirQualityMetrics?>(null)
     val currentMetrics: StateFlow<AirQualityMetrics?> = _currentMetrics.asStateFlow()
@@ -62,13 +70,31 @@ class SensorRepository(
             var metrics: AirQualityMetrics? = null
 
             try {
-                val fbApi = getFirebaseApiService()
-                val response = fbApi.getLiveMetrics()
+                val authPref = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()
+                val hostPref = userPrefs?.firebaseHostFlow?.firstOrNull()?.trim()
+                val api = firebaseSensorApiService ?: if (!hostPref.isNullOrEmpty() && hostPref != FirebaseSensorApiService.FIREBASE_HOST_URL) {
+                    FirebaseSensorApiService.create(hostPref)
+                } else {
+                    getFirebaseApiService()
+                }
+
+                val response = api.getLiveMetrics(auth = authPref?.takeIf { it.isNotBlank() })
                 if (response != null) {
                     metrics = response.toAirQualityMetrics()
+                    lastErrorReason = null
+                } else {
+                    lastErrorReason = "Base de datos vacía (/airsense/actual.json)"
                 }
-            } catch (_: Exception) {
-                // Sin conexión a Firebase
+            } catch (e: HttpException) {
+                lastErrorReason = if (e.code() == 401) {
+                    "Permiso denegado (HTTP 401). Habilita lectura en Reglas de Firebase."
+                } else {
+                    "Error HTTP ${e.code()} en Firebase"
+                }
+            } catch (_: UnknownHostException) {
+                lastErrorReason = "Sin conexión a Internet"
+            } catch (e: Exception) {
+                lastErrorReason = e.localizedMessage ?: "Error conectando a Firebase"
             }
 
             if (metrics != null) {
@@ -113,7 +139,7 @@ class SensorRepository(
                 val fallback = lastValidMetrics ?: AirQualityMetrics(lastUpdated = "Sin señal")
                 AirSenseState.Stale(
                     lastValidMetrics = fallback,
-                    reason = "Sin conexión con Firebase Realtime Database"
+                    reason = lastErrorReason ?: "Sin conexión con Firebase Realtime Database"
                 )
             }
         }
@@ -127,7 +153,8 @@ class SensorRepository(
                 } else {
                     getFirebaseApiService()
                 }
-                val response = api.getLiveMetrics()
+                val authPref = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()
+                val response = api.getLiveMetrics(auth = authPref?.takeIf { it.isNotBlank() })
                 if (response != null) {
                     Result.success(response.toAirQualityMetrics())
                 } else {
@@ -143,7 +170,8 @@ class SensorRepository(
         return withContext(Dispatchers.IO) {
             try {
                 val api = getFirebaseApiService()
-                val map = api.getHistory(limitToLast = limit)
+                val authPref = userPrefs?.firebaseAuthFlow?.firstOrNull()?.trim()
+                val map = api.getHistory(auth = authPref?.takeIf { it.isNotBlank() }, limitToLast = limit)
                 if (map.isNullOrEmpty()) {
                     Result.success(emptyList())
                 } else {

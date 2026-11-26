@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="6dp"
+    android:layout_margin="5dp"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@color/bg_card"
-    app:cardCornerRadius="20dp"
+    app:cardCornerRadius="22dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/stroke_card"
     app:strokeWidth="1dp">
@@ -16,23 +16,30 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="165dp"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="15dp">
 
-        <!-- Fila superior: Ícono y punto de estado -->
+        <!-- Fila superior: Ícono en caja y punto de estado -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/ivSensorIcon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+            <FrameLayout
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:contentDescription="Icono sensor"
-                android:src="@drawable/ic_iot"
-                app:tint="@color/text_primary" />
+                android:background="@drawable/bg_soft_teal">
+
+                <ImageView
+                    android:id="@+id/ivSensorIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Icono sensor"
+                    android:src="@drawable/ic_iot"
+                    app:tint="@color/airsense_secondary" />
+            </FrameLayout>
 
             <View
                 android:id="@+id/viewStatusDot"
@@ -43,13 +50,14 @@
                 android:background="@drawable/bg_status_dot" />
         </RelativeLayout>
 
-        <!-- Valor Principal del Sensor con AutoSize para garantizar ajuste sin desborde -->
+        <!-- Valor Principal del Sensor con AutoSize -->
         <TextView
             android:id="@+id/tvSensorMainMetric"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:ellipsize="end"
+            android:letterSpacing="-0.03"
             android:maxLines="1"
             android:textColor="@color/text_primary"
             android:textSize="22sp"
@@ -58,33 +66,33 @@
             app:autoSizeMinTextSize="14sp"
             app:autoSizeStepGranularity="1sp"
             app:autoSizeTextType="uniform"
-            tools:text="38 AQI" />
+            tools:text="450 ppm" />
 
         <!-- Subtítulo / Tipo de medición -->
         <TextView
             android:id="@+id/tvSensorType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/text_primary"
             android:textSize="11sp"
-            tools:text="Índice General" />
+            android:textStyle="bold"
+            tools:text="Gas MQ · CO₂" />
 
-        <!-- Nombre del Sensor con 2 líneas para alineación uniforme del grid -->
+        <!-- Nombre del Sensor -->
         <TextView
             android:id="@+id/tvSensorName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:minLines="2"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            tools:text="Monóxido de Carbono" />
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp"
+            tools:text="Sensor de Gases Principal (ESP8266)" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

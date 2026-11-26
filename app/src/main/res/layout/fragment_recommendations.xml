@@ -11,87 +11,127 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="20dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="28dp">
 
-        <!-- Header Title & Subtitle -->
+        <!-- Eyebrow -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/recommendations_header_title"
-            android:textColor="@color/text_primary"
-            android:textSize="22sp"
+            android:letterSpacing="0.15"
+            android:text="BIENESTAR EN CADA RESPIRO"
+            android:textAllCaps="true"
+            android:textColor="@color/airsense_secondary"
+            android:textSize="10sp"
             android:textStyle="bold" />
 
+        <!-- Page Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/recommendations_header_subtitle"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
+            android:layout_marginTop="6dp"
+            android:letterSpacing="-0.03"
+            android:lineSpacingExtra="2dp"
+            android:text="Pequeños cambios.\nMejor aire."
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-        <!-- Dynamic Active Recommendation Card -->
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="Acciones sencillas para cuidar tu espacio."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <!-- FEATURED ACTIVE RECOMMENDATION CARD -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_active_recommendation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="@color/bg_card_subtle"
-            app:cardCornerRadius="14dp"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/airsense_primary"
+            app:cardCornerRadius="22dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/airsense_secondary"
-            app:strokeWidth="1dp">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_brand_mark">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@string/title_recommendations"
-                        android:src="@drawable/ic_recommendations"
-                        app:tint="@color/airsense_primary" />
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Recomendacion activa"
+                        android:src="@drawable/ic_air_quality"
+                        app:tint="@color/white" />
+                </FrameLayout>
 
-                    <TextView
-                        android:id="@+id/tv_active_recommendation_title"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="💡 Recomendación Prioritaria"
-                        android:textColor="@color/airsense_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:letterSpacing="0.15"
+                    android:text="RECOMENDACIÓN PARA TI"
+                    android:textColor="#80DDD3"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_active_recommendation_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:letterSpacing="-0.02"
+                    android:text="Disfruta el aire limpio"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_active_recommendation_desc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Analizando métricas ambientales actuales..."
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
+                    android:lineSpacingExtra="3dp"
+                    android:text="La calidad del aire es óptima. Mantén una ventilación regular y disfruta de tu espacio."
+                    android:textColor="#D0E6E7"
+                    android:textSize="12sp" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Section Heading: Guía para un aire más sano -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp"
+            android:letterSpacing="-0.01"
+            android:text="Guía para un aire más sano"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
         <!-- Tip 1: Ventilación -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="11dp"
             app:cardBackgroundColor="@color/bg_card"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="22dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/stroke_card"
             app:strokeWidth="1dp">
@@ -103,48 +143,54 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <ImageView
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@color/airsense_secondary_light"
-                    android:contentDescription="@string/rec_ventilation_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_air_quality"
-                    app:tint="@color/airsense_secondary" />
+                <FrameLayout
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:background="@drawable/bg_soft_teal">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Ventilacion"
+                        android:src="@drawable/ic_air_quality"
+                        app:tint="@color/airsense_secondary" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/rec_ventilation_title"
+                        android:text="Ventila y renueva"
                         android:textColor="@color/text_primary"
-                        android:textSize="16sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/rec_ventilation_desc"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="Abre las ventanas entre 10 y 15 minutos al día, cuando el aire exterior sea favorable."
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Tip 2: Humedad -->
+        <!-- Tip 2: Purifica con HEPA -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="11dp"
             app:cardBackgroundColor="@color/bg_card"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="22dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/stroke_card"
             app:strokeWidth="1dp">
@@ -156,48 +202,54 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <ImageView
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@color/airsense_secondary_light"
-                    android:contentDescription="@string/rec_humidity_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_humidity"
-                    app:tint="@color/humidity_accent" />
+                <FrameLayout
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:background="@drawable/bg_soft_teal">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Purificador"
+                        android:src="@drawable/ic_sensors"
+                        app:tint="@color/airsense_secondary" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/rec_humidity_title"
+                        android:text="Purifica con HEPA"
                         android:textColor="@color/text_primary"
-                        android:textSize="16sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/rec_humidity_desc"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="Un filtro HEPA puede ayudar a reducir partículas suspendidas y alérgenos en interiores."
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Tip 3: Temperatura -->
+        <!-- Tip 3: Planea tus actividades -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="11dp"
             app:cardBackgroundColor="@color/bg_card"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="22dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/stroke_card"
             app:strokeWidth="1dp">
@@ -209,48 +261,54 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <ImageView
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@color/airsense_accent_light"
-                    android:contentDescription="@string/rec_temperature_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_temp"
-                    app:tint="@color/temp_accent" />
+                <FrameLayout
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:background="@drawable/bg_soft_teal">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Actividades"
+                        android:src="@drawable/ic_home"
+                        app:tint="@color/airsense_secondary" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/rec_temperature_title"
+                        android:text="Planea tus actividades"
                         android:textColor="@color/text_primary"
-                        android:textSize="16sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/rec_temperature_desc"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="Con AQI elevado, reduce el ejercicio intenso al aire libre; cuida especialmente a grupos vulnerables."
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Tip 4: Plantas -->
+        <!-- Tip 4: Un toque de verde -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="11dp"
             app:cardBackgroundColor="@color/bg_card"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="22dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/stroke_card"
             app:strokeWidth="1dp">
@@ -262,90 +320,43 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <ImageView
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@color/airsense_secondary_light"
-                    android:contentDescription="@string/rec_plants_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_recommendations"
-                    app:tint="@color/airsense_secondary" />
+                <FrameLayout
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:background="@drawable/bg_soft_teal">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Plantas"
+                        android:src="@drawable/ic_recommendations"
+                        app:tint="@color/airsense_secondary" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/rec_plants_title"
+                        android:text="Un toque de verde"
                         android:textColor="@color/text_primary"
-                        android:textSize="16sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/rec_plants_desc"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="Las plantas aportan bienestar al espacio, aunque no sustituyen la ventilación ni la filtración."
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Tip 5: Mantenimiento -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="@color/bg_card"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/stroke_card"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <ImageView
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@color/airsense_secondary_light"
-                    android:contentDescription="@string/rec_filters_title"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_sensors"
-                    app:tint="@color/airsense_primary" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/rec_filters_title"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/rec_filters_desc"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

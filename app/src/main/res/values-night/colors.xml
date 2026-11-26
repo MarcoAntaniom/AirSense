@@ -46,5 +46,7 @@
 
     <!-- Acentos Clima -->
     <color name="temp_accent">#FB923C</color>
+    <color name="temp_bg">#3E2211</color>
     <color name="humidity_accent">#38BDF8</color>
+    <color name="humidity_bg">#112F42</color>
 </resources>
