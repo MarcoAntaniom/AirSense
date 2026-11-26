@@ -15,6 +15,8 @@ import com.example.airsense.databinding.ActivityMainBinding
 import com.example.airsense.notifications.SensorMonitoringService
 import com.example.airsense.ui.SharedAirSenseViewModel
 import com.example.airsense.utils.PermissionHelper
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -67,15 +69,20 @@ class MainActivity : AppCompatActivity() {
         // Configurar navegación unificada con Jetpack Navigation
         setupNavigation()
 
-        // Router Evaluation: si es la primera ejecución, navegar a Onboarding
+        // Router Evaluation: si es la primera ejecución, navegar a Onboarding;
+        // si no es la primera ejecución y no hay sesión activa, redirigir a Login
         lifecycleScope.launch {
             val isFirstRun = userPrefs.isFirstRunFlow.first()
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+            val navController = navHostFragment.navController
             if (isFirstRun) {
-                val navHostFragment = supportFragmentManager
-                    .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-                val navController = navHostFragment.navController
                 if (navController.currentDestination?.id != R.id.onboardingFragment) {
                     navController.navigate(R.id.onboardingFragment)
+                }
+            } else if (runCatching { Firebase.auth.currentUser }.getOrNull() == null) {
+                if (navController.currentDestination?.id != R.id.loginFragment) {
+                    navController.navigate(R.id.action_global_to_loginFragment)
                 }
             }
         }
@@ -104,6 +111,10 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
+                R.id.loginFragment -> {
+                    binding.bottomNavigation.visibility = View.GONE
+                    supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                }
                 R.id.onboardingFragment, R.id.sensorDetailFragment -> {
                     binding.bottomNavigation.visibility = View.GONE
                     supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -121,6 +132,7 @@ class MainActivity : AppCompatActivity() {
      * Actualiza el título del Toolbar según la sección seleccionada.
      */
     private fun updateToolbarTitle(destinationId: Int) {
+<<<<<<< Updated upstream
         when (destinationId) {
             R.id.navigation_home -> supportActionBar?.setTitle(R.string.title_home)
             R.id.navigation_sensors -> supportActionBar?.setTitle(R.string.title_sensors)
@@ -129,6 +141,17 @@ class MainActivity : AppCompatActivity() {
             R.id.sensorDetailFragment -> supportActionBar?.title = "Detalle del Sensor"
             R.id.onboardingFragment -> supportActionBar?.title = "Bienvenido"
             else -> supportActionBar?.setTitle(R.string.title_home)
+=======
+        val title = when (destinationId) {
+            R.id.navigation_home -> "AirSense"
+            R.id.navigation_sensors -> getString(R.string.title_sensors)
+            R.id.navigation_recommendations -> getString(R.string.title_recommendations)
+            R.id.navigation_settings -> getString(R.string.title_settings)
+            R.id.sensorDetailFragment -> "Detalle"
+            R.id.onboardingFragment -> "Bienvenido"
+            R.id.loginFragment -> "Iniciar Sesión"
+            else -> "AirSense"
+>>>>>>> Stashed changes
         }
     }
 

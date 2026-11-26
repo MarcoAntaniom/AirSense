@@ -21,6 +21,15 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 
+<<<<<<< Updated upstream
+=======
+import com.example.airsense.data.UserPreferencesManager
+import com.example.airsense.data.auth.AuthRepository
+import kotlinx.coroutines.flow.firstOrNull
+import retrofit2.HttpException
+import java.net.UnknownHostException
+
+>>>>>>> Stashed changes
 /**
  * Repositorio de telemetría conectado automáticamente a Google Firebase Realtime Database
  * (https://airsense-c02fa-default-rtdb.firebaseio.com).
@@ -30,7 +39,8 @@ import kotlinx.coroutines.withContext
 class SensorRepository(
     @Suppress("unused") private val context: Context? = null,
     private val firebaseSensorApiService: FirebaseSensorApiService? = null,
-    private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator()
+    private val hysteresisCalculator: HysteresisCalculator = HysteresisCalculator(),
+    private val authRepository: AuthRepository = AuthRepository()
 ) {
     companion object {
         const val POLLING_INTERVAL_MS = 2500L
@@ -62,8 +72,20 @@ class SensorRepository(
             var metrics: AirQualityMetrics? = null
 
             try {
+<<<<<<< Updated upstream
                 val fbApi = getFirebaseApiService()
                 val response = fbApi.getLiveMetrics()
+=======
+                val hostPref = userPrefs?.firebaseHostFlow?.firstOrNull()?.trim()
+                val fbApi = firebaseSensorApiService ?: if (!hostPref.isNullOrEmpty() && hostPref != FirebaseSensorApiService.FIREBASE_HOST_URL) {
+                    FirebaseSensorApiService.create(hostPref)
+                } else {
+                    getFirebaseApiService()
+                }
+
+                val token = authRepository.getValidIdToken()
+                val response = fbApi.getLiveMetrics(auth = token)
+>>>>>>> Stashed changes
                 if (response != null) {
                     metrics = response.toAirQualityMetrics()
                 }
@@ -127,7 +149,12 @@ class SensorRepository(
                 } else {
                     getFirebaseApiService()
                 }
+<<<<<<< Updated upstream
                 val response = api.getLiveMetrics()
+=======
+                val token = authRepository.getValidIdToken()
+                val response = api.getLiveMetrics(auth = token)
+>>>>>>> Stashed changes
                 if (response != null) {
                     Result.success(response.toAirQualityMetrics())
                 } else {
@@ -143,7 +170,12 @@ class SensorRepository(
         return withContext(Dispatchers.IO) {
             try {
                 val api = getFirebaseApiService()
+<<<<<<< Updated upstream
                 val map = api.getHistory(limitToLast = limit)
+=======
+                val token = authRepository.getValidIdToken()
+                val map = api.getHistory(auth = token, limitToLast = limit)
+>>>>>>> Stashed changes
                 if (map.isNullOrEmpty()) {
                     Result.success(emptyList())
                 } else {
